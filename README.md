@@ -1,70 +1,63 @@
-# Getting Started with Create React App
+🎬 FlixBattle
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+FlixBattle is an interactive web application where users vote between two entertainment options — movies, series, or pop-culture icons — and see live results update instantly.
 
-## Available Scripts
+The project focuses on clean UI, intuitive UX, and core React fundamentals, built step-by-step as a scalable MVP.
 
-In the project directory, you can run:
+🚀 Live Concept
 
-### `npm start`
+Choose. Vote. Set the Trend.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Users are presented with two options in a “battle” format and can:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Vote for their favorite
 
-### `npm test`
+See real-time percentage results
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Move through multiple battles seamlessly
 
-### `npm run build`
+🧠 Key Features
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+⚔️ Battle-based voting system
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+📊 Live vote percentages with animated progress bars
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+🔁 Next Battle navigation with circular flow
 
-### `npm run eject`
+🔢 Battle counter (Battle X of Y)
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+🌙 Dark cinematic theme
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+⚡ Instant UI updates using React state
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+📱 Clean, responsive layout foundation
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+🛠️ Tech Stack
 
-## Learn More
+Frontend: React (Create React App)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Routing: React Router
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Styling: CSS (modular, scalable)
 
-### Code Splitting
+State Management: React Hooks (useState)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Data Handling: Local mock data (extensible to backend)
 
-### Analyzing the Bundle Size
+⚙️ How It Works (High Level)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Battle data is loaded from a local data file
 
-### Making a Progressive Web App
+React state tracks:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Current battle index
 
-### Advanced Configuration
+Votes for each option
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Vote percentages are calculated dynamically
 
-### Deployment
+Progress bars visually represent results
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+Users can move to the next battle seamlessly
 
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+The UI automatically re-renders when state changes — no manual DOM manipulation.
