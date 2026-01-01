@@ -106,3 +106,42 @@
 .progress-bar-fill {
   background: #38bdf8; /* subtle accent blue */
 }
+
+.progress-bar-fill {
+  background: #38bdf8;
+  min-width: 4px; /* 👈 IMPORTANT */
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+
+/* 📱 Mobile styles */
+@media (max-width: 768px) {
+  .battle-area {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .vs-text {
+    font-size: 18px;
+  }
+
+  .battle-poster {
+    width: 90%;
+    max-width: 280px;
+    height: 360px;
+  }
+
+  .vote-buttons {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .progress-container {
+    text-align: left;
+  }
+}
