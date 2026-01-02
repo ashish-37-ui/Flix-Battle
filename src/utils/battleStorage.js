@@ -6,3 +6,6 @@ export const getBattleData = (battleIndex) => {
 export const saveBattleData = (battleIndex, data) => {
   localStorage.setItem(`battle_${battleIndex}`, JSON.stringify(data));
 };
+
+
+

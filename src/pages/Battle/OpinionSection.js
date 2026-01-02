@@ -6,6 +6,9 @@ function OpinionSection({
   opinions,
   showOpinions,
   toggleOpinions,
+  likeOpinion,
+  userId,
+  topOpinion,
 }) {
   return (
     <>
@@ -37,22 +40,52 @@ function OpinionSection({
         </div>
       )}
 
-      {showOpinions && (
-        <div style={{ marginTop: "20px" }}>
-          {opinions.map((op, index) => (
-            <div
-              key={index}
-              style={{
-                borderBottom: "1px solid #334155",
-                padding: "10px 0",
-              }}
-            >
-              <strong>{op.option}</strong>
-              <p>{op.text}</p>
-            </div>
-          ))}
+      {topOpinion && (topOpinion.likes || []).length > 0 && (
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "12px",
+            border: "1px solid #22c55e",
+            borderRadius: "6px",
+            background: "#052e16",
+          }}
+        >
+          <strong>🔥 Top Opinion</strong>
+          <p style={{ marginTop: "6px" }}>{topOpinion.text}</p>
+          <div style={{ fontSize: "14px", marginTop: "4px" }}>
+            👍 {(topOpinion.likes || []).length}
+          </div>
         </div>
       )}
+
+      {showOpinions &&
+        opinions.map((op) => (
+          <div
+            key={op.id}
+            style={{
+              borderBottom: "1px solid #334155",
+              padding: "10px 0",
+            }}
+          >
+            <strong>{op.option}</strong>
+
+            <p style={{ marginTop: "5px" }}>{op.text}</p>
+
+            <div style={{ marginTop: "6px", fontSize: "14px" }}>
+              👍 {(op.likes || []).length}
+
+              {op.userId !== userId &&
+                !(op.likes || []).includes(userId) && (
+                  <button
+                    style={{ marginLeft: "10px" }}
+                    onClick={() => likeOpinion(op.id)}
+                  >
+                    Like
+                  </button>
+                )}
+            </div>
+          </div>
+        ))}
     </>
   );
 }

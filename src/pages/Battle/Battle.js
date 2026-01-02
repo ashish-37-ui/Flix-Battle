@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import data from "../../data/data";
 import "./Battle.css";
 import { getBattleData, saveBattleData } from "../../utils/battleStorage";
+import { getUserId } from "../../utils/user";
 
 import BattleHeader from "./BattleHeader";
 import VoteSection from "./VoteSection";
@@ -10,18 +11,37 @@ import OpinionSection from "./OpinionSection";
 
 function Battle() {
   // 🔹 Voting state
-  const [votesA, setVotesA] = useState(0);
-  const [votesB, setVotesB] = useState(0);
-  const [hasVoted, setHasVoted] = useState(false);
+
+  const [votesA, setVotesA] = useState(() => {
+    const data = getBattleData(0);
+    return data ? data.votesA : 0;
+  });
+
+  const [votesB, setVotesB] = useState(() => {
+    const data = getBattleData(0);
+    return data ? data.votesB : 0;
+  });
+
+  const [opinions, setOpinions] = useState(() => {
+    const data = getBattleData(0);
+    return data ? data.opinions : [];
+  });
+
+  const [hasVoted, setHasVoted] = useState(() => {
+    const data = getBattleData(0);
+    return data ? data.hasVoted : false;
+  });
 
   // 🔹 Battle navigation
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // 🔹 Opinion state
   const [opinionText, setOpinionText] = useState("");
-  const [opinions, setOpinions] = useState([]);
+
   const [showOpinions, setShowOpinions] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
+
+  const userId = getUserId();
 
   const battle = data[currentIndex];
 
@@ -63,6 +83,12 @@ function Battle() {
   const percentB =
     totalVotes === 0 ? 0 : ((votesB / totalVotes) * 100).toFixed(0);
 
+    const topOpinion =
+  opinions.length === 0
+    ? null
+    : [...opinions].sort((a, b) => b.likes.length - a.likes.length)[0];
+
+
   // 🔹 Vote handlers
   const voteA = () => {
     if (hasVoted) return;
@@ -87,11 +113,41 @@ function Battle() {
       {
         option: selectedOption,
         text: opinionText,
+        id: Date.now(),
+        userId: userId,
+        likes: [],
       },
     ]);
 
     setOpinionText("");
   };
+
+  const likeOpinion = (opinionId) => {
+    setOpinions((prevOpinions) =>
+      prevOpinions.map((op) => {
+        if (op.id !== opinionId) return op;
+
+              
+
+
+        // ❌ user cannot like their own opinion
+        if (op.userId === userId) return op;
+
+        // ❌ user cannot like twice
+          if (op.userId === userId) return op;
+        if ((op.likes|| []).includes(userId)) return op;
+
+        // ✅ add like
+        return {
+          ...op,
+          likes: [...op.likes || [], userId],
+        };
+      })
+    );
+  };
+
+  console.log("Before:", opinions);
+
 
   // 🔹 Next battle
   const nextBattle = () => {
@@ -138,6 +194,8 @@ function Battle() {
         opinions={opinions}
         showOpinions={showOpinions}
         toggleOpinions={() => setShowOpinions(!showOpinions)}
+        likeOpinion={likeOpinion}
+        userId={userId}
       />
 
       <ResultsSection
