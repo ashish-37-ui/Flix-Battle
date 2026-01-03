@@ -3,6 +3,7 @@ import data from "../../data/data";
 import "./Battle.css";
 import { getBattleData, saveBattleData } from "../../utils/battleStorage";
 import { getUserId } from "../../utils/user";
+import { useSearchParams } from "react-router-dom";
 
 import BattleHeader from "./BattleHeader";
 import VoteSection from "./VoteSection";
@@ -40,10 +41,18 @@ function Battle() {
 
   const [showOpinions, setShowOpinions] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const userId = getUserId();
 
   const battle = data[currentIndex];
+
+  const winner =
+    votesA === votesB
+      ? null
+      : votesA > votesB
+      ? battle.optionA
+      : battle.optionB;
 
   useEffect(() => {
     const savedData = getBattleData(currentIndex);
@@ -75,6 +84,17 @@ function Battle() {
     });
   }, [votesA, votesB, opinions, hasVoted, currentIndex]);
 
+  useEffect(() => {
+    const indexFromUrl = searchParams.get("index");
+    if (indexFromUrl !== null) {
+      setCurrentIndex(Number(indexFromUrl));
+    }
+  }, []);
+
+  useEffect(() => {
+    setSearchParams({ index: currentIndex });
+  }, [currentIndex]);
+
   // 🔹 Calculations
   const totalVotes = votesA + votesB;
 
@@ -83,11 +103,10 @@ function Battle() {
   const percentB =
     totalVotes === 0 ? 0 : ((votesB / totalVotes) * 100).toFixed(0);
 
-    const topOpinion =
-  opinions.length === 0
-    ? null
-    : [...opinions].sort((a, b) => b.likes.length - a.likes.length)[0];
-
+  const topOpinion =
+    opinions.length === 0
+      ? null
+      : [...opinions].sort((a, b) => b.likes.length - a.likes.length)[0];
 
   // 🔹 Vote handlers
   const voteA = () => {
@@ -127,27 +146,23 @@ function Battle() {
       prevOpinions.map((op) => {
         if (op.id !== opinionId) return op;
 
-              
-
-
         // ❌ user cannot like their own opinion
         if (op.userId === userId) return op;
 
         // ❌ user cannot like twice
-          if (op.userId === userId) return op;
-        if ((op.likes|| []).includes(userId)) return op;
+        if (op.userId === userId) return op;
+        if ((op.likes || []).includes(userId)) return op;
 
         // ✅ add like
         return {
           ...op,
-          likes: [...op.likes || [], userId],
+          likes: [...(op.likes || []), userId],
         };
       })
     );
   };
 
   console.log("Before:", opinions);
-
 
   // 🔹 Next battle
   const nextBattle = () => {
@@ -173,9 +188,23 @@ function Battle() {
       />
 
       <div className="battle-area">
-        <div className="battle-poster">{battle.optionA}</div>
+        <div
+          className={`battle-poster ${
+            winner === battle.optionA ? "winner" : ""
+          }`}
+        >
+          {battle.optionA}
+        </div>
+
         <div className="vs-text">VS</div>
-        <div className="battle-poster">{battle.optionB}</div>
+
+        <div
+          className={`battle-poster ${
+            winner === battle.optionB ? "winner" : ""
+          }`}
+        >
+          {battle.optionB}
+        </div>
       </div>
 
       <VoteSection
@@ -185,6 +214,21 @@ function Battle() {
         onVoteA={voteA}
         onVoteB={voteB}
       />
+
+      {/* 🔗 SHARE VOTE */}
+      {hasVoted && (
+        <div style={{ marginTop: "16px" }}>
+          <button
+            onClick={() => {
+              const text = `I voted for ${selectedOption} on FlixBattle.\n${window.location.href}`;
+              navigator.clipboard.writeText(text);
+              alert("Vote message copied!");
+            }}
+          >
+            🗳️ Share my vote
+          </button>
+        </div>
+      )}
 
       <OpinionSection
         hasVoted={hasVoted}

@@ -12,34 +12,40 @@ function OpinionSection({
 }) {
   return (
     <>
+      {/* ✍️ Write Opinion */}
       {hasVoted && (
-        <div style={{ marginTop: "30px" }}>
-          <h3>Why did you choose this?</h3>
+        <div className="opinion-card">
+          <h3>💬 Why did you choose this?</h3>
 
           <textarea
             value={opinionText}
             onChange={(e) => setOpinionText(e.target.value)}
             rows={3}
-            placeholder="Share your thoughts (optional)"
-            style={{ width: "100%", padding: "10px" }}
+            placeholder="What made this better for you?"
+            className="opinion-input"
           />
 
-          <button style={{ marginTop: "10px" }} onClick={onSubmit}>
-            Submit Opinion
-          </button>
+          <div className="opinion-actions">
+            <button onClick={onSubmit} className="primary-btn">
+              Submit Opinion
+            </button>
+
+            <button className="secondary-btn">✨ Share my thought</button>
+          </div>
         </div>
       )}
 
+      {/* 👀 View / Hide Opinions */}
       {opinions.length > 0 && (
         <div style={{ marginTop: "30px" }}>
           <button onClick={toggleOpinions}>
-            {showOpinions
-              ? "Hide opinions"
-              : `View opinions (${opinions.length})`}
+             {showOpinions ? "⬆ Hide opinions" : `⬇ View opinions (${opinions.length})`}
+
           </button>
         </div>
       )}
 
+      {/* 🔥 TOP OPINION */}
       {topOpinion && (topOpinion.likes || []).length > 0 && (
         <div
           style={{
@@ -58,34 +64,38 @@ function OpinionSection({
         </div>
       )}
 
-      {showOpinions &&
-        opinions.map((op) => (
-          <div
-            key={op.id}
-            style={{
-              borderBottom: "1px solid #334155",
-              padding: "10px 0",
-            }}
-          >
-            <strong>{op.option}</strong>
+      {/* 💬 Opinions List */}
+      {showOpinions && (
+  <div className="opinions-panel">
+    <div className="opinions-header">
+      💬 Community Opinions
+    </div>
 
-            <p style={{ marginTop: "5px" }}>{op.text}</p>
+    <div className="opinions-list">
+      {opinions.map((op) => (
+        <div key={op.id} className="opinion-item">
+          <strong>{op.option}</strong>
+          <p>{op.text}</p>
 
-            <div style={{ marginTop: "6px", fontSize: "14px" }}>
-              👍 {(op.likes || []).length}
+          <div className="opinion-meta">
+            👍 {(op.likes || []).length} likes
 
-              {op.userId !== userId &&
-                !(op.likes || []).includes(userId) && (
-                  <button
-                    style={{ marginLeft: "10px" }}
-                    onClick={() => likeOpinion(op.id)}
-                  >
-                    Like
-                  </button>
-                )}
-            </div>
+            {op.userId !== userId &&
+              !(op.likes || []).includes(userId) && (
+                <button
+                  className="like-btn"
+                  onClick={() => likeOpinion(op.id)}
+                >
+                  Like
+                </button>
+              )}
           </div>
-        ))}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
     </>
   );
 }

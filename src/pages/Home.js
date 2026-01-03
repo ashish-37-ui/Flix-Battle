@@ -1,63 +1,72 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate} from "react-router-dom";
 import "./Home.css";
 
 function Home() {
+
+  const navigate = useNavigate();
+
   return (
-    <div className="home">
+    <>
+     <div className="home-page">
+      {/* 🔥 HERO SECTION */}
+      <section className="home-hero">
+        <h1>Pick a side.</h1>
+        <h2>Defend your choice.</h2>
 
-      {/* HERO */}
-      <div className="hero">
-        <h1>Choose. Vote. Set the Trend.</h1>
-        <p>Vote between movies, singers & pop culture icons.</p>
-
-        <div className="hero-buttons">
-          <button>Start Voting</button>
-          <button>Explore Battles</button>
-        </div>
-      </div>
-
-      {/* BATTLE OF THE DAY */}
-      <div className="section">
-        <h2>Battle of the Day</h2>
-
-        <div className="battle-preview">
-          <div className="poster">Poster A</div>
-          <div className="vs">VS</div>
-          <div className="poster">Poster B</div>
-        </div>
+        <p>
+          Vote between iconic movies, share your opinion,
+          and discover what the world thinks.
+        </p>
 
         <Link to="/battle">
-          <button>Vote Now</button>
+          <button className="primary-btn hero-btn">
+            Start a Battle 🔥
+          </button>
         </Link>
-      </div>
-
-      {/* TRENDING */}
-      <div className="section">
-        <h2>Trending Battles</h2>
-
-        <div className="trending">
-          <div className="card">Battle 1</div>
-          <div className="card">Battle 2</div>
-          <div className="card">Battle 3</div>
-          <div className="card">Battle 4</div>
-        </div>
-      </div>
-
-      {/* CATEGORIES */}
-      <div className="section">
-        <h2>Categories</h2>
-
-        <div className="categories">
-          <div className="category">Movies</div>
-          <div className="category">Singers</div>
-          <div className="category">Series</div>
-          <div className="category">Characters</div>
-          <div className="category">Directors</div>
-          <div className="category">OTT</div>
-        </div>
-      </div>
-
+      </section>
     </div>
+    <section className="battle-type-section">
+  <h2 className="section-title">What do you want to battle?</h2>
+
+  <div className="battle-types">
+    <div
+      className="battle-type-card"
+      onClick={() => navigate("/battle?type=movies")}
+    >
+      🎬
+      <span>Movies</span>
+    </div>
+
+    <div
+      className="battle-type-card"
+      onClick={() => navigate("/battle?type=actors")}
+    >
+      🎭
+      <span>Actors</span>
+    </div>
+
+    <div
+      className="battle-type-card"
+      onClick={() => navigate("/battle?type=tv")}
+    >
+      📺
+      <span>TV Series</span>
+    </div>
+
+    <div
+      className="battle-type-card"
+      onClick={() => navigate("/battle?type=singers")}
+    >
+      🎵
+      <span>Singers</span>
+    </div>
+  </div>
+</section>
+    </>
+   
+  
+
+
   );
 }
 
