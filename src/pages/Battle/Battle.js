@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import data from "../../data/data";
+import battleDataMap from "../../data/battleData";
+
 import "./Battle.css";
 import { getBattleData, saveBattleData } from "../../utils/battleStorage";
 import { getUserId } from "../../utils/user";
@@ -43,9 +44,13 @@ function Battle() {
   const [selectedOption, setSelectedOption] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const battleType = searchParams.get("type") || "movies";
+
   const userId = getUserId();
 
-  const battle = data[currentIndex];
+const battleData = battleDataMap[battleType] || battleDataMap.movies;
+const battle = battleData[currentIndex];
+
 
   const winner =
     votesA === votesB
@@ -166,7 +171,8 @@ function Battle() {
 
   // 🔹 Next battle
   const nextBattle = () => {
-    const nextIndex = (currentIndex + 1) % data.length;
+    const nextIndex = (currentIndex + 1) % battleData.length;
+
     setCurrentIndex(nextIndex);
 
     setVotesA(0);
@@ -184,8 +190,20 @@ function Battle() {
       <BattleHeader
         title={battle.title}
         current={currentIndex + 1}
-        total={data.length}
+        total={battleData.length}
+
       />
+
+      <div
+        style={{
+          marginBottom: "20px",
+          fontSize: "14px",
+          color: "#94a3b8",
+          textTransform: "capitalize",
+        }}
+      >
+        Category: <strong>{battleType}</strong>
+      </div>
 
       <div className="battle-area">
         <div
