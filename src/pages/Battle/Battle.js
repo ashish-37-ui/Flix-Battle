@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import battleDataMap from "../../data/battleData";
+import { useSearchParams } from "react-router-dom";
 
+import battleDataMap from "../../data/battleData";
 import "./Battle.css";
+
 import { getBattleData, saveBattleData } from "../../utils/battleStorage";
 import { getUserId } from "../../utils/user";
-import { useSearchParams } from "react-router-dom";
 
 import BattleHeader from "./BattleHeader";
 import VoteSection from "./VoteSection";
@@ -12,45 +13,97 @@ import ResultsSection from "./ResultsSection";
 import OpinionSection from "./OpinionSection";
 
 function Battle() {
-  // 🔹 Voting state
-
-  const [votesA, setVotesA] = useState(() => {
-    const data = getBattleData(0);
-    return data ? data.votesA : 0;
-  });
-
-  const [votesB, setVotesB] = useState(() => {
-    const data = getBattleData(0);
-    return data ? data.votesB : 0;
-  });
-
-  const [opinions, setOpinions] = useState(() => {
-    const data = getBattleData(0);
-    return data ? data.opinions : [];
-  });
-
-  const [hasVoted, setHasVoted] = useState(() => {
-    const data = getBattleData(0);
-    return data ? data.hasVoted : false;
-  });
-
-  // 🔹 Battle navigation
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  // 🔹 Opinion state
-  const [opinionText, setOpinionText] = useState("");
-
-  const [showOpinions, setShowOpinions] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(null);
+  /* -------------------- URL PARAMS -------------------- */
   const [searchParams, setSearchParams] = useSearchParams();
 
   const battleType = searchParams.get("type") || "movies";
+  const genre = searchParams.get("genre");
 
+  /* -------------------- USER -------------------- */
   const userId = getUserId();
 
-const battleData = battleDataMap[battleType] || battleDataMap.movies;
-const battle = battleData[currentIndex];
+  /* -------------------- BATTLE INDEX -------------------- */
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const indexFromUrl = searchParams.get("index");
+    return indexFromUrl ? Number(indexFromUrl) : 0;
+  });
 
+  /* -------------------- STATE -------------------- */
+  const [votesA, setVotesA] = useState(0);
+  const [votesB, setVotesB] = useState(0);
+  const [opinions, setOpinions] = useState([]);
+  const [hasVoted, setHasVoted] = useState(false);
+
+  const [opinionText, setOpinionText] = useState("");
+  const [showOpinions, setShowOpinions] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
+
+  /* -------------------- DATA SOURCE -------------------- */
+  const isCustom = battleType === "custom";
+  const customBattle = JSON.parse(localStorage.getItem("customBattle"));
+
+  const baseBattleData =
+    isCustom && customBattle
+      ? [customBattle]
+      : battleDataMap[battleType] || battleDataMap.movies;
+
+  const supportsGenre =
+    battleType === "movies" || battleType === "tv";
+
+  const battleData =
+    supportsGenre && genre
+      ? baseBattleData.filter((b) => b.genre === genre)
+      : baseBattleData;
+
+  const battle = battleData[currentIndex];
+
+  /* -------------------- LOAD SAVED DATA -------------------- */
+  useEffect(() => {
+    const saved = getBattleData(`${battleType}-${currentIndex}`);
+
+    if (saved) {
+      setVotesA(saved.votesA);
+      setVotesB(saved.votesB);
+      setOpinions(saved.opinions || []);
+      setHasVoted(saved.hasVoted);
+    } else {
+      setVotesA(0);
+      setVotesB(0);
+      setOpinions([]);
+      setHasVoted(false);
+    }
+
+    setOpinionText("");
+    setShowOpinions(false);
+    setSelectedOption(null);
+  }, [battleType, currentIndex]);
+
+  /* -------------------- SAVE DATA -------------------- */
+  useEffect(() => {
+    saveBattleData(`${battleType}-${currentIndex}`, {
+      votesA,
+      votesB,
+      opinions,
+      hasVoted,
+    });
+  }, [votesA, votesB, opinions, hasVoted, battleType, currentIndex]);
+
+  /* -------------------- SYNC INDEX IN URL -------------------- */
+  useEffect(() => {
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.set("index", currentIndex);
+      return params;
+    });
+  }, [currentIndex, setSearchParams]);
+
+  /* -------------------- CALCULATIONS -------------------- */
+  const totalVotes = votesA + votesB;
+
+  const percentA =
+    totalVotes === 0 ? 0 : ((votesA / totalVotes) * 100).toFixed(0);
+  const percentB =
+    totalVotes === 0 ? 0 : ((votesB / totalVotes) * 100).toFixed(0);
 
   const winner =
     votesA === votesB
@@ -59,86 +112,38 @@ const battle = battleData[currentIndex];
       ? battle.optionA
       : battle.optionB;
 
-  useEffect(() => {
-    const savedData = getBattleData(currentIndex);
-
-    if (savedData) {
-      setVotesA(savedData.votesA);
-      setVotesB(savedData.votesB);
-      setOpinions(savedData.opinions || []);
-      setHasVoted(savedData.hasVoted);
-    } else {
-      setVotesA(0);
-      setVotesB(0);
-      setOpinions([]);
-      setHasVoted(false);
-    }
-
-    setShowOpinions(false);
-    setOpinionText("");
-    setSelectedOption(null);
-  }, [currentIndex]);
-
-  // ✅ USEEFFECT #2 — SAVE DATA (RIGHT AFTER FIRST ONE)
-  useEffect(() => {
-    saveBattleData(currentIndex, {
-      votesA,
-      votesB,
-      opinions,
-      hasVoted,
-    });
-  }, [votesA, votesB, opinions, hasVoted, currentIndex]);
-
-  useEffect(() => {
-    const indexFromUrl = searchParams.get("index");
-    if (indexFromUrl !== null) {
-      setCurrentIndex(Number(indexFromUrl));
-    }
-  }, []);
-
-  useEffect(() => {
-    setSearchParams({ index: currentIndex });
-  }, [currentIndex]);
-
-  // 🔹 Calculations
-  const totalVotes = votesA + votesB;
-
-  const percentA =
-    totalVotes === 0 ? 0 : ((votesA / totalVotes) * 100).toFixed(0);
-  const percentB =
-    totalVotes === 0 ? 0 : ((votesB / totalVotes) * 100).toFixed(0);
-
   const topOpinion =
     opinions.length === 0
       ? null
-      : [...opinions].sort((a, b) => b.likes.length - a.likes.length)[0];
+      : [...opinions].sort(
+          (a, b) => (b.likes || []).length - (a.likes || []).length
+        )[0];
 
-  // 🔹 Vote handlers
+  /* -------------------- ACTIONS -------------------- */
   const voteA = () => {
     if (hasVoted) return;
-    setVotesA(votesA + 1);
+    setVotesA((v) => v + 1);
     setSelectedOption(battle.optionA);
     setHasVoted(true);
   };
 
   const voteB = () => {
     if (hasVoted) return;
-    setVotesB(votesB + 1);
+    setVotesB((v) => v + 1);
     setSelectedOption(battle.optionB);
     setHasVoted(true);
   };
 
-  // 🔹 Submit opinion
   const submitOpinion = () => {
-    if (!opinionText.trim()) return;
+    if (!opinionText.trim() || !selectedOption) return;
 
-    setOpinions([
-      ...opinions,
+    setOpinions((prev) => [
+      ...prev,
       {
+        id: Date.now(),
+        userId,
         option: selectedOption,
         text: opinionText,
-        id: Date.now(),
-        userId: userId,
         likes: [],
       },
     ]);
@@ -147,18 +152,12 @@ const battle = battleData[currentIndex];
   };
 
   const likeOpinion = (opinionId) => {
-    setOpinions((prevOpinions) =>
-      prevOpinions.map((op) => {
+    setOpinions((prev) =>
+      prev.map((op) => {
         if (op.id !== opinionId) return op;
-
-        // ❌ user cannot like their own opinion
-        if (op.userId === userId) return op;
-
-        // ❌ user cannot like twice
         if (op.userId === userId) return op;
         if ((op.likes || []).includes(userId)) return op;
 
-        // ✅ add like
         return {
           ...op,
           likes: [...(op.likes || []), userId],
@@ -167,23 +166,12 @@ const battle = battleData[currentIndex];
     );
   };
 
-  console.log("Before:", opinions);
-
-  // 🔹 Next battle
   const nextBattle = () => {
-    const nextIndex = (currentIndex + 1) % battleData.length;
-
-    setCurrentIndex(nextIndex);
-
-    setVotesA(0);
-    setVotesB(0);
-    setHasVoted(false);
-
-    setOpinions([]);
-    setShowOpinions(false);
-    setOpinionText("");
-    setSelectedOption(null);
+    setCurrentIndex((i) => (i + 1) % battleData.length);
   };
+
+  /* -------------------- RENDER -------------------- */
+  if (!battle) return null;
 
   return (
     <div className="battle-page">
@@ -191,20 +179,50 @@ const battle = battleData[currentIndex];
         title={battle.title}
         current={currentIndex + 1}
         total={battleData.length}
-
       />
 
-      <div
-        style={{
-          marginBottom: "20px",
-          fontSize: "14px",
-          color: "#94a3b8",
-          textTransform: "capitalize",
-        }}
-      >
+      {/* 🏷 Category */}
+      <div style={{ color: "#94a3b8", marginBottom: "14px" }}>
         Category: <strong>{battleType}</strong>
       </div>
 
+      {/* 🎯 GENRE FILTER */}
+      {supportsGenre && (
+        <div className="genre-filter">
+          <button
+            onClick={() =>
+              setSearchParams((prev) => {
+                const params = new URLSearchParams(prev);
+                params.delete("genre");
+                params.set("index", 0);
+                return params;
+              })
+            }
+          >
+            All
+          </button>
+
+          {[...new Set(baseBattleData.map((b) => b.genre))]
+            .filter(Boolean)
+            .map((g) => (
+              <button
+                key={g}
+                onClick={() =>
+                  setSearchParams((prev) => {
+                    const params = new URLSearchParams(prev);
+                    params.set("genre", g);
+                    params.set("index", 0);
+                    return params;
+                  })
+                }
+              >
+                {g.toUpperCase()}
+              </button>
+            ))}
+        </div>
+      )}
+
+      {/* 🆚 BATTLE */}
       <div className="battle-area">
         <div
           className={`battle-poster ${
@@ -233,21 +251,6 @@ const battle = battleData[currentIndex];
         onVoteB={voteB}
       />
 
-      {/* 🔗 SHARE VOTE */}
-      {hasVoted && (
-        <div style={{ marginTop: "16px" }}>
-          <button
-            onClick={() => {
-              const text = `I voted for ${selectedOption} on FlixBattle.\n${window.location.href}`;
-              navigator.clipboard.writeText(text);
-              alert("Vote message copied!");
-            }}
-          >
-            🗳️ Share my vote
-          </button>
-        </div>
-      )}
-
       <OpinionSection
         hasVoted={hasVoted}
         opinionText={opinionText}
@@ -258,6 +261,7 @@ const battle = battleData[currentIndex];
         toggleOpinions={() => setShowOpinions(!showOpinions)}
         likeOpinion={likeOpinion}
         userId={userId}
+        topOpinion={topOpinion}
       />
 
       <ResultsSection

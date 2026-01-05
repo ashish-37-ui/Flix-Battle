@@ -311,6 +311,27 @@ button:disabled {
   }
 }
 
+.genre-filter {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.genre-filter button {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #334155;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.genre-filter button:hover {
+  border-color: #38bdf8;
+  color: #e2e8f0;
+}
+
 
 
 
