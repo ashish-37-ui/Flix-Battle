@@ -14,21 +14,24 @@ function Home() {
       <div className="home-page">
         {/* 🔥 HERO SECTION */}
         <section className="home-hero">
-          <h1>Pick a side.</h1>
-          <h2>Defend your choice.</h2>
+          <h1>
+            Pick a side.
+            <br />
+            <span>Defend your choice.</span>
+          </h1>
 
           <p>
-            Vote between iconic movies, share your opinion, and discover what
-            the world thinks.
+            Vote between iconic movies, actors, TV shows, or anything. Share
+            your opinion and see what the world thinks.
           </p>
 
           <button
             className="primary-btn hero-btn"
-            onClick={() => {
+            onClick={() =>
               document
                 .querySelector(".battle-type-section")
-                .scrollIntoView({ behavior: "smooth" });
-            }}
+                .scrollIntoView({ behavior: "smooth" })
+            }
           >
             Choose a Battle Type ↓
           </button>

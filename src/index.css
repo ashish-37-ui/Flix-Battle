@@ -11,3 +11,19 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+button {
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease,
+    opacity 0.1s ease;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+button:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
