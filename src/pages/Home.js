@@ -1,13 +1,32 @@
 import { Link, useNavigate } from "react-router-dom";
+import { getPopularBattles } from "../utils/discovery";
+import { useEffect, useState } from "react";
+
 import "./Home.css";
 import battleDataMap from "../data/battleData";
 import { getBattleOfTheDay } from "../utils/battleOfTheDay";
+import { getCurrentUser } from "../utils/auth";
+import { getRecentBattles } from "../utils/discovery";
+
 
 function Home() {
   const navigate = useNavigate();
 
   // Pick movies as default for now
   const todayBattle = getBattleOfTheDay(battleDataMap.movies);
+
+  const currentUser = getCurrentUser();
+
+  const [popularBattles, setPopularBattles] = useState([]);
+  const [recentBattles, setRecentBattles] = useState([]);
+
+  useEffect(() => {
+    setPopularBattles(getPopularBattles());
+  }, []);
+
+  useEffect(() => {
+  setRecentBattles(getRecentBattles());
+}, []);
 
   return (
     <>
@@ -56,12 +75,82 @@ function Home() {
         </section>
       )}
 
+      {/* 🔥 POPULAR BATTLES */}
+      {popularBattles.length > 0 && (
+        <section className="popular-battles">
+          <h2>🔥 Popular Battles</h2>
+
+          <div className="battle-feed">
+            {popularBattles.map((b, i) => (
+              <div
+                key={i}
+                className="battle-feed-card"
+                onClick={() =>
+                  navigate(`/battle?type=${b.type}&index=${b.index}`)
+                }
+              >
+                <div className="feed-title">{b.title}</div>
+
+                <div className="feed-options">
+                  <span>{b.optionA}</span>
+                  <strong>VS</strong>
+                  <span>{b.optionB}</span>
+                </div>
+
+                <div className="feed-meta">{b.totalVotes} votes</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ✨ RECENT BATTLES */}
+{recentBattles.length > 0 && (
+  <section className="recent-battles">
+    <h2>✨ Recently Created</h2>
+
+    <div className="battle-feed">
+      {recentBattles.map((b, i) => (
+        <div
+          key={i}
+          className="battle-feed-card"
+          onClick={() =>
+            navigate(`/battle?type=${b.type}&index=${b.index}`)
+          }
+        >
+          <div className="feed-title">{b.title}</div>
+
+          <div className="feed-options">
+            <span>{b.optionA}</span>
+            <strong>VS</strong>
+            <span>{b.optionB}</span>
+          </div>
+
+          <div className="feed-meta">
+            Created just now
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
+
+
       {/* ✨ CREATE CUSTOM BATTLE */}
       <section className="create-battle">
         <h2>Create Your Own Battle</h2>
         <p>Pick any two things and let people decide.</p>
 
-        <button className="primary-btn" onClick={() => navigate("/create")}>
+        <button
+          className="primary-btn"
+          onClick={() => {
+            if (!currentUser) {
+              navigate("/login");
+            } else {
+              navigate("/create");
+            }
+          }}
+        >
           Create a Battle ✨
         </button>
       </section>

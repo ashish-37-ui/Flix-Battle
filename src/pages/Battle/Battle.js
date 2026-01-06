@@ -6,6 +6,8 @@ import "./Battle.css";
 
 import { getBattleData, saveBattleData } from "../../utils/battleStorage";
 import { getUserId } from "../../utils/user";
+import { getCurrentUser } from "../../utils/auth";
+import { getBattleByTypeAndIndex } from "../../utils/battleResolver";
 
 import BattleHeader from "./BattleHeader";
 import VoteSection from "./VoteSection";
@@ -17,16 +19,15 @@ function Battle() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const battleType = searchParams.get("type") || "movies";
+  const urlIndex = Number(searchParams.get("index")) || 0;
   const genre = searchParams.get("genre");
 
   /* -------------------- USER -------------------- */
   const userId = getUserId();
 
   /* -------------------- BATTLE INDEX -------------------- */
-  const [currentIndex, setCurrentIndex] = useState(() => {
-    const indexFromUrl = searchParams.get("index");
-    return indexFromUrl ? Number(indexFromUrl) : 0;
-  });
+  const [currentIndex, setCurrentIndex] = useState(urlIndex);
+
 
   /* -------------------- STATE -------------------- */
   const [votesA, setVotesA] = useState(0);
@@ -47,15 +48,20 @@ function Battle() {
       ? [customBattle]
       : battleDataMap[battleType] || battleDataMap.movies;
 
-  const supportsGenre =
-    battleType === "movies" || battleType === "tv";
+  const supportsGenre = battleType === "movies" || battleType === "tv";
 
   const battleData =
     supportsGenre && genre
       ? baseBattleData.filter((b) => b.genre === genre)
       : baseBattleData;
 
-  const battle = battleData[currentIndex];
+  const battle = getBattleByTypeAndIndex(battleType, currentIndex);
+  const currentUser = getCurrentUser();
+
+  useEffect(() => {
+  setCurrentIndex(urlIndex);
+}, [urlIndex]);
+
 
   /* -------------------- LOAD SAVED DATA -------------------- */
   useEffect(() => {
@@ -152,6 +158,8 @@ function Battle() {
   };
 
   const likeOpinion = (opinionId) => {
+    if (!currentUser) return;
+
     setOpinions((prev) =>
       prev.map((op) => {
         if (op.id !== opinionId) return op;
@@ -167,8 +175,15 @@ function Battle() {
   };
 
   const nextBattle = () => {
-    setCurrentIndex((i) => (i + 1) % battleData.length);
-  };
+  const nextIndex = (currentIndex + 1) % battleData.length;
+
+  setSearchParams({
+    type: battleType,
+    index: nextIndex,
+  });
+};
+
+
 
   /* -------------------- RENDER -------------------- */
   if (!battle) return null;
@@ -251,18 +266,27 @@ function Battle() {
         onVoteB={voteB}
       />
 
-      <OpinionSection
-        hasVoted={hasVoted}
-        opinionText={opinionText}
-        setOpinionText={setOpinionText}
-        onSubmit={submitOpinion}
-        opinions={opinions}
-        showOpinions={showOpinions}
-        toggleOpinions={() => setShowOpinions(!showOpinions)}
-        likeOpinion={likeOpinion}
-        userId={userId}
-        topOpinion={topOpinion}
-      />
+      {currentUser ? (
+        <OpinionSection
+          hasVoted={hasVoted}
+          opinionText={opinionText}
+          setOpinionText={setOpinionText}
+          onSubmit={submitOpinion}
+          opinions={opinions}
+          showOpinions={showOpinions}
+          toggleOpinions={() => setShowOpinions(!showOpinions)}
+          likeOpinion={likeOpinion}
+          userId={currentUser.id}
+          topOpinion={topOpinion}
+        />
+      ) : (
+        <div style={{ marginTop: "30px", textAlign: "center" }}>
+          <p style={{ color: "#94a3b8" }}>
+            Login to share your opinion and like others.
+          </p>
+          <a href="/login">Login</a>
+        </div>
+      )}
 
       <ResultsSection
         optionA={battle.optionA}

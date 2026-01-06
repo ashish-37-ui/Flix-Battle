@@ -9,17 +9,30 @@ function CreateBattle() {
   const [optionB, setOptionB] = useState("");
 
   const createBattle = () => {
-    if (!optionA.trim() || !optionB.trim()) return;
+  if (!optionA.trim() || !optionB.trim()) return;
 
-    const battle = {
-      title: "User Created Battle",
-      optionA,
-      optionB,
-    };
+  const existingBattles =
+    JSON.parse(localStorage.getItem("customBattles")) || [];
 
-    localStorage.setItem("customBattle", JSON.stringify(battle));
-    navigate("/battle?type=custom");
+  const newBattle = {
+    title: "User Created Battle",
+    optionA,
+    optionB,
+    type, // "custom", "movies", etc.
+    id: Date.now(), // 🔑 unique battle id
+ // 🔑 position matters
+    createdAt: Date.now(),         // 🔑 for "recent"
   };
+
+  localStorage.setItem(
+    "customBattles",
+    JSON.stringify([...existingBattles, newBattle])
+  );
+
+  // 👉 Go directly to the new battle
+  navigate(`/battle?type=${type}&index=${newBattle.index}`);
+};
+
 
   return (
     <div className="battle-page">

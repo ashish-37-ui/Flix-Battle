@@ -146,3 +146,59 @@
   color: #94a3b8;
   margin-bottom: 20px;
 }
+
+/* 🔥 Popular Battles */
+.popular-battles {
+  margin-top: 120px;
+  text-align: center;
+}
+
+.battle-feed {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  max-width: 1000px;
+  margin-inline: auto;
+}
+
+.battle-feed-card {
+  padding: 22px;
+  border-radius: 18px;
+  border: 1px solid #334155;
+  background: #020617;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.battle-feed-card:hover {
+  transform: translateY(-6px);
+  border-color: #f97316;
+  box-shadow: 0 18px 40px rgba(249, 115, 22, 0.2);
+}
+
+.feed-title {
+  font-size: 15px;
+  color: #fbbf24;
+  margin-bottom: 10px;
+}
+
+.feed-options {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.feed-meta {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.recent-battles{
+   margin-top: 80px;
+  text-align: center;
+}
+
+
