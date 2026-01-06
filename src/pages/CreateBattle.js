@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "./CreateBattle.css";
 
 function CreateBattle() {
   const navigate = useNavigate();
@@ -9,59 +10,84 @@ function CreateBattle() {
   const [optionB, setOptionB] = useState("");
 
   const createBattle = () => {
-  if (!optionA.trim() || !optionB.trim()) return;
+    if (!optionA.trim() || !optionB.trim()) return;
 
-  const existingBattles =
-    JSON.parse(localStorage.getItem("customBattles")) || [];
+    const battle = {
+      title: "User Created Battle",
+      optionA,
+      optionB,
+      type: "custom",
+    };
 
-  const newBattle = {
-    title: "User Created Battle",
-    optionA,
-    optionB,
-    type, // "custom", "movies", etc.
-    id: Date.now(), // 🔑 unique battle id
- // 🔑 position matters
-    createdAt: Date.now(),         // 🔑 for "recent"
+    localStorage.setItem(
+      "activeCustomBattle",
+      JSON.stringify(battle)
+    );
+
+    navigate("/battle?type=custom");
   };
 
-  localStorage.setItem(
-    "customBattles",
-    JSON.stringify([...existingBattles, newBattle])
-  );
-
-  // 👉 Go directly to the new battle
-  navigate(`/battle?type=${type}&index=${newBattle.index}`);
-};
-
-
   return (
-    <div className="battle-page">
+    <div className="create-page">
       <h1>Create a Battle</h1>
+      <p className="subtitle">
+        Compare anything and let the world decide.
+      </p>
 
-      <select
-        value={type}
-        onChange={(e) => setType(e.target.value)}
+      {/* 🔘 TYPE SELECTOR */}
+      <div className="type-selector">
+        {[
+          { key: "custom", label: "Anything ✨" },
+          { key: "movies", label: "Movies 🎬" },
+          { key: "actors", label: "Actors 🎭" },
+          { key: "tv", label: "TV Series 📺" },
+          { key: "singers", label: "Singers 🎵" },
+        ].map((t) => (
+          <button
+            key={t.key}
+            className={`type-btn ${
+              type === t.key ? "active" : ""
+            }`}
+            onClick={() => setType(t.key)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* 🆚 OPTIONS */}
+      <div className="options-row">
+        <div className="option-card">
+          <label>Option A</label>
+          <input
+            placeholder="Enter first choice"
+            value={optionA}
+            onChange={(e) => setOptionA(e.target.value)}
+          />
+        </div>
+
+        <div className="vs">VS</div>
+
+        <div className="option-card">
+          <label>Option B</label>
+          <input
+            placeholder="Enter second choice"
+            value={optionB}
+            onChange={(e) => setOptionB(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <p className="helper-text">
+        Example: Interstellar vs Inception
+      </p>
+
+      {/* 🔥 CTA */}
+      <button
+        className="primary-btn create-btn"
+        onClick={createBattle}
+        disabled={!optionA.trim() || !optionB.trim()}
       >
-        <option value="custom">Anything</option>
-        <option value="movies">Movies</option>
-        <option value="actors">Actors</option>
-        <option value="tv">TV Series</option>
-        <option value="singers">Singers</option>
-      </select>
-
-      <input
-        placeholder="Option A"
-        value={optionA}
-        onChange={(e) => setOptionA(e.target.value)}
-      />
-
-      <input
-        placeholder="Option B"
-        value={optionB}
-        onChange={(e) => setOptionB(e.target.value)}
-      />
-
-      <button onClick={createBattle}>
         Start Battle 🔥
       </button>
     </div>
