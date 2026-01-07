@@ -21,11 +21,20 @@ export function getPopularBattles(limit = 4) {
     });
 }
 
-export function getRecentBattles(limit = 4) {
-  const raw = JSON.parse(localStorage.getItem("customBattles")) || [];
+export function getRecentBattles(limit = 5) {
+  const raw = JSON.parse(localStorage.getItem("customBattles"));
 
-  return raw
-    .slice()
-    .reverse() // newest first
+  if (!raw || typeof raw !== "object") return [];
+
+  const allBattles = [
+    ...(Array.isArray(raw.movies) ? raw.movies : []),
+    ...(Array.isArray(raw.tv) ? raw.tv : []),
+    ...(Array.isArray(raw.actors) ? raw.actors : []),
+    ...(Array.isArray(raw.singers) ? raw.singers : []),
+  ];
+
+  return allBattles
+    .sort((a, b) => b.createdAt - a.createdAt)
     .slice(0, limit);
 }
+

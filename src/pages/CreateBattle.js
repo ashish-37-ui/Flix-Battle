@@ -5,39 +5,57 @@ import "./CreateBattle.css";
 function CreateBattle() {
   const navigate = useNavigate();
 
-  const [type, setType] = useState("custom");
+  const [type, setType] = useState("movies");
   const [optionA, setOptionA] = useState("");
   const [optionB, setOptionB] = useState("");
 
   const createBattle = () => {
-    if (!optionA.trim() || !optionB.trim()) return;
+  if (!optionA.trim() || !optionB.trim()) return;
 
-    const battle = {
-      title: "User Created Battle",
-      optionA,
-      optionB,
-      type: "custom",
-    };
+  const raw = JSON.parse(localStorage.getItem("customBattles"));
 
-    localStorage.setItem(
-      "activeCustomBattle",
-      JSON.stringify(battle)
-    );
-
-    navigate("/battle?type=custom");
+  const stored = {
+    movies: Array.isArray(raw?.movies) ? raw.movies : [],
+    tv: Array.isArray(raw?.tv) ? raw.tv : [],
+    actors: Array.isArray(raw?.actors) ? raw.actors : [],
+    singers: Array.isArray(raw?.singers) ? raw.singers : [],
   };
+
+  const newBattle = {
+    id: Date.now(),
+    title: "User Created Battle",
+    optionA,
+    optionB,
+    type,
+    source: "custom",
+    createdAt: Date.now(),
+  };
+
+  // ✅ append
+  stored[type].push(newBattle);
+
+  // ✅ save
+  localStorage.setItem("customBattles", JSON.stringify(stored));
+
+  // 🔑 calculate correct index
+  const staticCount =
+    JSON.parse(localStorage.getItem("staticBattleCounts"))?.[type] || 0;
+
+  const newIndex = staticCount + stored[type].length - 1;
+
+  // ✅ navigate DIRECTLY to the created battle
+  navigate(`/battle?type=${type}&index=${newIndex}`);
+};
+
 
   return (
     <div className="create-page">
       <h1>Create a Battle</h1>
-      <p className="subtitle">
-        Compare anything and let the world decide.
-      </p>
+      <p className="subtitle">Compare anything and let the world decide.</p>
 
       {/* 🔘 TYPE SELECTOR */}
       <div className="type-selector">
         {[
-          { key: "custom", label: "Anything ✨" },
           { key: "movies", label: "Movies 🎬" },
           { key: "actors", label: "Actors 🎭" },
           { key: "tv", label: "TV Series 📺" },
@@ -45,9 +63,7 @@ function CreateBattle() {
         ].map((t) => (
           <button
             key={t.key}
-            className={`type-btn ${
-              type === t.key ? "active" : ""
-            }`}
+            className={`type-btn ${type === t.key ? "active" : ""}`}
             onClick={() => setType(t.key)}
           >
             {t.label}
@@ -78,11 +94,8 @@ function CreateBattle() {
         </div>
       </div>
 
-      <p className="helper-text">
-        Example: Interstellar vs Inception
-      </p>
+      <p className="helper-text">Example: Interstellar vs Inception</p>
 
-      {/* 🔥 CTA */}
       <button
         className="primary-btn create-btn"
         onClick={createBattle}

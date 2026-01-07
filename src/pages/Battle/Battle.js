@@ -7,7 +7,6 @@ import "./Battle.css";
 import { getBattleData, saveBattleData } from "../../utils/battleStorage";
 import { getUserId } from "../../utils/user";
 import { getCurrentUser } from "../../utils/auth";
-import { getBattleByTypeAndIndex } from "../../utils/battleResolver";
 
 import BattleHeader from "./BattleHeader";
 import VoteSection from "./VoteSection";
@@ -24,10 +23,14 @@ function Battle() {
 
   /* -------------------- USER -------------------- */
   const userId = getUserId();
+  const currentUser = getCurrentUser();
 
-  /* -------------------- BATTLE INDEX -------------------- */
+  /* -------------------- INDEX -------------------- */
   const [currentIndex, setCurrentIndex] = useState(urlIndex);
 
+  useEffect(() => {
+    setCurrentIndex(urlIndex);
+  }, [urlIndex]);
 
   /* -------------------- STATE -------------------- */
   const [votesA, setVotesA] = useState(0);
@@ -39,71 +42,62 @@ function Battle() {
   const [showOpinions, setShowOpinions] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
 
-  /* -------------------- DATA SOURCE -------------------- */
-  const isCustom = battleType === "custom";
-  const customBattle = JSON.parse(localStorage.getItem("customBattle"));
+  /* -------------------- CUSTOM + STATIC BATTLES -------------------- */
+  const rawCustom = JSON.parse(localStorage.getItem("customBattles")) || {};
 
-  const baseBattleData =
-    isCustom && customBattle
-      ? [customBattle]
-      : battleDataMap[battleType] || battleDataMap.movies;
+  const customBattles = {
+    movies: Array.isArray(rawCustom.movies) ? rawCustom.movies : [],
+    tv: Array.isArray(rawCustom.tv) ? rawCustom.tv : [],
+    actors: Array.isArray(rawCustom.actors) ? rawCustom.actors : [],
+    singers: Array.isArray(rawCustom.singers) ? rawCustom.singers : [],
+  };
+
+  const staticBattles = battleDataMap[battleType] || [];
+  const mergedBattles = [...staticBattles, ...customBattles[battleType]];
 
   const supportsGenre = battleType === "movies" || battleType === "tv";
 
   const battleData =
     supportsGenre && genre
-      ? baseBattleData.filter((b) => b.genre === genre)
-      : baseBattleData;
+      ? mergedBattles.filter((b) => b.genre === genre)
+      : mergedBattles;
 
-  const battle = getBattleByTypeAndIndex(battleType, currentIndex);
-  const currentUser = getCurrentUser();
+  const battle = battleData[currentIndex];
 
+  /* -------------------- LOAD DATA (ON BATTLE CHANGE ONLY) -------------------- */
   useEffect(() => {
-  setCurrentIndex(urlIndex);
-}, [urlIndex]);
+    if (!battle) return;
 
+    const saved = getBattleData(`${battleType}-${battle.id}`);
 
-  /* -------------------- LOAD SAVED DATA -------------------- */
-  useEffect(() => {
-    const saved = getBattleData(`${battleType}-${currentIndex}`);
-
-    if (saved) {
-      setVotesA(saved.votesA);
-      setVotesB(saved.votesB);
-      setOpinions(saved.opinions || []);
-      setHasVoted(saved.hasVoted);
-    } else {
-      setVotesA(0);
-      setVotesB(0);
-      setOpinions([]);
-      setHasVoted(false);
-    }
+    setVotesA(saved?.votesA ?? 0);
+    setVotesB(saved?.votesB ?? 0);
+    setOpinions(saved?.opinions ?? []);
+    setHasVoted(saved?.hasVoted ?? false);
 
     setOpinionText("");
     setShowOpinions(false);
     setSelectedOption(null);
-  }, [battleType, currentIndex]);
+  }, [battle?.id, battleType]);
 
-  /* -------------------- SAVE DATA -------------------- */
   useEffect(() => {
-    saveBattleData(`${battleType}-${currentIndex}`, {
-      votesA,
-      votesB,
-      opinions,
-      hasVoted,
-    });
-  }, [votesA, votesB, opinions, hasVoted, battleType, currentIndex]);
+  const counts = {};
+  Object.keys(battleDataMap).forEach((type) => {
+    counts[type] = battleDataMap[type]?.length || 0;
+  });
+  localStorage.setItem("staticBattleCounts", JSON.stringify(counts));
+}, []);
 
-  /* -------------------- SYNC INDEX IN URL -------------------- */
-  useEffect(() => {
-    setSearchParams((prev) => {
-      const params = new URLSearchParams(prev);
-      params.set("index", currentIndex);
-      return params;
-    });
-  }, [currentIndex, setSearchParams]);
 
   /* -------------------- CALCULATIONS -------------------- */
+  if (!battle) {
+    return (
+      <div className="battle-page">
+        <h1>Battle not found</h1>
+      </div>
+    );
+  }
+
   const totalVotes = votesA + votesB;
 
   const percentA =
@@ -125,26 +119,44 @@ function Battle() {
           (a, b) => (b.likes || []).length - (a.likes || []).length
         )[0];
 
-  /* -------------------- ACTIONS -------------------- */
+  /* -------------------- ACTIONS (SAVE HERE, NOT IN useEffect) -------------------- */
   const voteA = () => {
     if (hasVoted) return;
-    setVotesA((v) => v + 1);
+
+    const newVotesA = votesA + 1;
+    setVotesA(newVotesA);
     setSelectedOption(battle.optionA);
     setHasVoted(true);
+
+    saveBattleData(`${battleType}-${battle.id}`, {
+      votesA: newVotesA,
+      votesB,
+      opinions,
+      hasVoted: true,
+    });
   };
 
   const voteB = () => {
     if (hasVoted) return;
-    setVotesB((v) => v + 1);
+
+    const newVotesB = votesB + 1;
+    setVotesB(newVotesB);
     setSelectedOption(battle.optionB);
     setHasVoted(true);
+
+    saveBattleData(`${battleType}-${battle.id}`, {
+      votesA,
+      votesB: newVotesB,
+      opinions,
+      hasVoted: true,
+    });
   };
 
   const submitOpinion = () => {
     if (!opinionText.trim() || !selectedOption) return;
 
-    setOpinions((prev) => [
-      ...prev,
+    const updatedOpinions = [
+      ...opinions,
       {
         id: Date.now(),
         userId,
@@ -152,42 +164,54 @@ function Battle() {
         text: opinionText,
         likes: [],
       },
-    ]);
+    ];
 
+    setOpinions(updatedOpinions);
     setOpinionText("");
+
+    saveBattleData(`${battleType}-${battle.id}`, {
+      votesA,
+      votesB,
+      opinions: updatedOpinions,
+      hasVoted,
+    });
   };
 
   const likeOpinion = (opinionId) => {
     if (!currentUser) return;
 
-    setOpinions((prev) =>
-      prev.map((op) => {
-        if (op.id !== opinionId) return op;
-        if (op.userId === userId) return op;
-        if ((op.likes || []).includes(userId)) return op;
+    const updatedOpinions = opinions.map((op) => {
+      if (op.id !== opinionId) return op;
+      if (op.userId === userId) return op;
+      if ((op.likes || []).includes(userId)) return op;
 
-        return {
-          ...op,
-          likes: [...(op.likes || []), userId],
-        };
-      })
-    );
+      return {
+        ...op,
+        likes: [...(op.likes || []), userId],
+      };
+    });
+
+    setOpinions(updatedOpinions);
+
+    saveBattleData(`${battleType}-${battle.id}`, {
+      votesA,
+      votesB,
+      opinions: updatedOpinions,
+      hasVoted,
+    });
   };
 
   const nextBattle = () => {
-  const nextIndex = (currentIndex + 1) % battleData.length;
+    const nextIndex = (currentIndex + 1) % battleData.length;
 
-  setSearchParams({
-    type: battleType,
-    index: nextIndex,
-  });
-};
-
-
+    setSearchParams({
+      type: battleType,
+      index: nextIndex,
+      ...(genre ? { genre } : {}),
+    });
+  };
 
   /* -------------------- RENDER -------------------- */
-  if (!battle) return null;
-
   return (
     <div className="battle-page">
       <BattleHeader
@@ -196,48 +220,10 @@ function Battle() {
         total={battleData.length}
       />
 
-      {/* 🏷 Category */}
       <div style={{ color: "#94a3b8", marginBottom: "14px" }}>
         Category: <strong>{battleType}</strong>
       </div>
 
-      {/* 🎯 GENRE FILTER */}
-      {supportsGenre && (
-        <div className="genre-filter">
-          <button
-            onClick={() =>
-              setSearchParams((prev) => {
-                const params = new URLSearchParams(prev);
-                params.delete("genre");
-                params.set("index", 0);
-                return params;
-              })
-            }
-          >
-            All
-          </button>
-
-          {[...new Set(baseBattleData.map((b) => b.genre))]
-            .filter(Boolean)
-            .map((g) => (
-              <button
-                key={g}
-                onClick={() =>
-                  setSearchParams((prev) => {
-                    const params = new URLSearchParams(prev);
-                    params.set("genre", g);
-                    params.set("index", 0);
-                    return params;
-                  })
-                }
-              >
-                {g.toUpperCase()}
-              </button>
-            ))}
-        </div>
-      )}
-
-      {/* 🆚 BATTLE */}
       <div className="battle-area">
         <div
           className={`battle-poster ${
