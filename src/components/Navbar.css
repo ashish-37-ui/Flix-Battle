@@ -41,3 +41,52 @@
   font-size: 13px;
 }
 
+@media (max-width: 768px) {
+  .navbar {
+    padding: 10px 14px;
+  }
+
+  .navbar-logo {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-actions {
+    gap: 10px;
+  }
+
+  .navbar-actions button {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .logout-btn {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar a,
+  .navbar button {
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    border-bottom: 1px solid #1e293b;
+  }
+}
+
+

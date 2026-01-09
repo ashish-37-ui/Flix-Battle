@@ -441,3 +441,90 @@ button:disabled {
     text-align: left;
   }
 }
+
+@media (max-width: 768px) {
+  .battle-page {
+    padding: 20px 14px;
+  }
+
+  .battle-area {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .vs-text {
+    font-size: 16px;
+    opacity: 0.6;
+  }
+
+  .battle-poster {
+    width: 100%;
+    min-height: 120px;
+    padding: 20px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .vote-buttons {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .vote-buttons button {
+    width: 100%;
+    padding: 16px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .battle-poster.selected {
+    border-width: 3px;
+  }
+
+  .battle-poster.winner {
+    box-shadow: 0 0 16px rgba(34, 197, 94, 0.7);
+  }
+}
+
+@media (max-width: 768px) {
+  .results {
+    margin-top: 32px;
+  }
+
+  .progress-row {
+    margin-bottom: 18px;
+  }
+
+  .progress-label {
+    font-size: 14px;
+  }
+
+  .progress-bar-bg {
+    height: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  textarea {
+    font-size: 15px;
+    padding: 12px;
+  }
+
+  .like-btn {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .next-btn {
+    width: 100%;
+    margin-top: 30px;
+    padding: 16px;
+    font-size: 16px;
+  }
+}
+
