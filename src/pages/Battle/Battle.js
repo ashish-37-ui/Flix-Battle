@@ -64,6 +64,22 @@ function Battle() {
 
   const battle = battleData[currentIndex];
 
+  const battleId = searchParams.get("battleId");
+
+  useEffect(() => {
+  if (!battleId || !battleData.length) return;
+
+  const foundIndex = battleData.findIndex(
+    (b) => String(b.id) === String(battleId)
+  );
+
+  if (foundIndex !== -1) {
+    setCurrentIndex(foundIndex);
+  }
+}, [battleId, battleData]);
+
+
+
   /* -------------------- LOAD DATA (ON BATTLE CHANGE ONLY) -------------------- */
   useEffect(() => {
     if (!battle) return;

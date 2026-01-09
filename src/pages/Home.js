@@ -20,6 +20,8 @@ function Home() {
   const [popularBattles, setPopularBattles] = useState([]);
   const [recentBattles, setRecentBattles] = useState([]);
 
+  
+
   useEffect(() => {
     setPopularBattles(getPopularBattles());
   }, []);
@@ -86,7 +88,8 @@ function Home() {
                 key={i}
                 className="battle-feed-card"
                 onClick={() =>
-                  navigate(`/battle?type=${b.type}&index=${b.index}`)
+                  navigate(`/battle?type=${b.type}&battleId=${b.id}`)
+
                 }
               >
                 <div className="feed-title">{b.title}</div>
@@ -115,7 +118,8 @@ function Home() {
           key={i}
           className="battle-feed-card"
           onClick={() =>
-            navigate(`/battle?type=${b.type}&index=${b.index}`)
+            navigate(`/battle?type=${b.type}&battleId=${b.id}`)
+
           }
         >
           <div className="feed-title">{b.title}</div>
