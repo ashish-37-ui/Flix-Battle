@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import battleDataMap from "../data/battleData"; // ADD THIS AT TOP
+
 import "./CreateBattle.css";
 
 function CreateBattle() {
@@ -10,50 +12,45 @@ function CreateBattle() {
   const [optionB, setOptionB] = useState("");
 
   const createBattle = () => {
-  if (!optionA.trim() || !optionB.trim()) return;
+    if (!optionA.trim() || !optionB.trim()) return;
 
-  const raw = JSON.parse(localStorage.getItem("customBattles"));
+    // 🔑 Load existing custom battles safely
+    const stored = JSON.parse(localStorage.getItem("customBattles")) || {
+      movies: [],
+      tv: [],
+      actors: [],
+      singers: [],
+    };
 
-  const stored = {
-    movies: Array.isArray(raw?.movies) ? raw.movies : [],
-    tv: Array.isArray(raw?.tv) ? raw.tv : [],
-    actors: Array.isArray(raw?.actors) ? raw.actors : [],
-    singers: Array.isArray(raw?.singers) ? raw.singers : [],
+    const newBattle = {
+      id: Date.now(),
+      title: "User Created Battle",
+      optionA,
+      optionB,
+      type,
+      source: "custom",
+      createdAt: Date.now(),
+    };
+
+    // 🔑 Append battle to correct category
+    stored[type].push(newBattle);
+
+    localStorage.setItem("customBattles", JSON.stringify(stored));
+
+    // 🔑 Navigate directly to this battle
+    const defaultCount = battleDataMap[type]?.length || 0;
+    const newIndex = defaultCount + stored[type].length - 1;
+
+    navigate(`/battle?type=${type}&index=${newIndex}`);
   };
-
-  const newBattle = {
-    id: Date.now(),
-    title: "User Created Battle",
-    optionA,
-    optionB,
-    type,
-    source: "custom",
-    createdAt: Date.now(),
-  };
-
-  // ✅ append
-  stored[type].push(newBattle);
-
-  // ✅ save
-  localStorage.setItem("customBattles", JSON.stringify(stored));
-
-  // 🔑 calculate correct index
-  const staticCount =
-    JSON.parse(localStorage.getItem("staticBattleCounts"))?.[type] || 0;
-
-  const newIndex = staticCount + stored[type].length - 1;
-
-  // ✅ navigate DIRECTLY to the created battle
-  navigate(`/battle?type=${type}&index=${newIndex}`);
-};
-
 
   return (
     <div className="create-page">
       <h1>Create a Battle</h1>
-      <p className="subtitle">Compare anything and let the world decide.</p>
+      <p className="subtitle">Pick two options and let the world decide.</p>
 
-      {/* 🔘 TYPE SELECTOR */}
+      {/* STEP 1 */}
+      <h3 className="step-title">1️⃣ Choose Battle Type</h3>
       <div className="type-selector">
         {[
           { key: "movies", label: "Movies 🎬" },
@@ -71,14 +68,17 @@ function CreateBattle() {
         ))}
       </div>
 
-      {/* 🆚 OPTIONS */}
+      {/* STEP 2 */}
+      <h3 className="step-title">2️⃣ Enter Options</h3>
       <div className="options-row">
         <div className="option-card">
           <label>Option A</label>
           <input
-            placeholder="Enter first choice"
+            placeholder="Option A (e.g. Interstellar)"
             value={optionA}
             onChange={(e) => setOptionA(e.target.value)}
+            maxLength={40}
+            autoFocus
           />
         </div>
 
@@ -87,21 +87,35 @@ function CreateBattle() {
         <div className="option-card">
           <label>Option B</label>
           <input
-            placeholder="Enter second choice"
+            placeholder="Option B (e.g. Inception)"
             value={optionB}
             onChange={(e) => setOptionB(e.target.value)}
+            maxLength={40}
           />
         </div>
       </div>
 
-      <p className="helper-text">Example: Interstellar vs Inception</p>
+      <p className="helper-text">Tip: Short names (1–3 words) work best</p>
 
+      {/* PREVIEW */}
+      {optionA && optionB && (
+        <div className="battle-preview">
+          <span>{optionA}</span>
+          <strong>VS</strong>
+          <span>{optionB}</span>
+        </div>
+      )}
+
+      {/* STEP 3 */}
+      <h3 className="step-title">3️⃣ Launch Battle</h3>
       <button
         className="primary-btn create-btn"
         onClick={createBattle}
         disabled={!optionA.trim() || !optionB.trim()}
       >
-        Start Battle 🔥
+        {!optionA.trim() || !optionB.trim()
+          ? "Enter both options to continue"
+          : "Start Battle 🔥"}
       </button>
     </div>
   );

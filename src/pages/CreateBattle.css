@@ -96,6 +96,25 @@
   font-size: 18px;
 }
 
+.step-title {
+  margin-top: 32px;
+  margin-bottom: 12px;
+  font-size: 18px;
+  color: #e5e7eb;
+}
+
+.battle-preview {
+  margin-top: 20px;
+  padding: 14px;
+  border: 1px dashed #334155;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  color: #e5e7eb;
+}
+
+
 /* MOBILE */
 @media (max-width: 768px) {
   .options-row {

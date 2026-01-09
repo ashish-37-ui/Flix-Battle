@@ -16,6 +16,11 @@ function VoteSection({ optionA, optionB, hasVoted, onVoteA, onVoteB }) {
       >
         Vote {optionB}
       </button>
+      {hasVoted && (
+        <p style={{ marginTop: "10px", color: "#22c55e", fontSize: "14px" }}>
+          ✅ Vote recorded
+        </p>
+      )}
     </div>
   );
 }

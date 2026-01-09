@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams , useNavigate  } from "react-router-dom";
 
 import battleDataMap from "../../data/battleData";
 import "./Battle.css";
@@ -14,25 +14,22 @@ import ResultsSection from "./ResultsSection";
 import OpinionSection from "./OpinionSection";
 
 function Battle() {
-  /* -------------------- URL PARAMS -------------------- */
+  /* ---------------- URL PARAMS ---------------- */
   const [searchParams, setSearchParams] = useSearchParams();
-
   const battleType = searchParams.get("type") || "movies";
   const urlIndex = Number(searchParams.get("index")) || 0;
   const genre = searchParams.get("genre");
 
-  /* -------------------- USER -------------------- */
+  /* ---------------- USER ---------------- */
   const userId = getUserId();
   const currentUser = getCurrentUser();
+  const navigate = useNavigate();
 
-  /* -------------------- INDEX -------------------- */
+
+  /* ---------------- INDEX ---------------- */
   const [currentIndex, setCurrentIndex] = useState(urlIndex);
 
-  useEffect(() => {
-    setCurrentIndex(urlIndex);
-  }, [urlIndex]);
-
-  /* -------------------- STATE -------------------- */
+  /* ---------------- STATE ---------------- */
   const [votesA, setVotesA] = useState(0);
   const [votesB, setVotesB] = useState(0);
   const [opinions, setOpinions] = useState([]);
@@ -42,78 +39,75 @@ function Battle() {
   const [showOpinions, setShowOpinions] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
 
-  /* -------------------- CUSTOM + STATIC BATTLES -------------------- */
-  const rawCustom = JSON.parse(localStorage.getItem("customBattles")) || {};
+  /* 🔥 micro-interaction */
+  const [showVoteConfirm, setShowVoteConfirm] = useState(false);
 
-  const customBattles = {
-    movies: Array.isArray(rawCustom.movies) ? rawCustom.movies : [],
-    tv: Array.isArray(rawCustom.tv) ? rawCustom.tv : [],
-    actors: Array.isArray(rawCustom.actors) ? rawCustom.actors : [],
-    singers: Array.isArray(rawCustom.singers) ? rawCustom.singers : [],
-  };
+  /* ---------------- DATA ---------------- */
+  const customBattles = JSON.parse(localStorage.getItem("customBattles")) || {};
 
-  const staticBattles = battleDataMap[battleType] || [];
-  const mergedBattles = [...staticBattles, ...customBattles[battleType]];
+  const baseData = [
+    ...(battleDataMap[battleType] || []),
+    ...(customBattles[battleType] || []),
+  ];
 
   const supportsGenre = battleType === "movies" || battleType === "tv";
 
   const battleData =
     supportsGenre && genre
-      ? mergedBattles.filter((b) => b.genre === genre)
-      : mergedBattles;
+      ? baseData.filter((b) => b.genre === genre)
+      : baseData;
 
   const battle = battleData[currentIndex];
-
   const battleId = searchParams.get("battleId");
 
   useEffect(() => {
-  if (!battleId || !battleData.length) return;
+    if (battleId) {
+      const foundIndex = battleData.findIndex(
+        (b) => String(b.id) === String(battleId)
+      );
 
-  const foundIndex = battleData.findIndex(
-    (b) => String(b.id) === String(battleId)
-  );
+      if (foundIndex !== -1) {
+        setCurrentIndex(foundIndex);
+        return;
+      }
+    }
 
-  if (foundIndex !== -1) {
-    setCurrentIndex(foundIndex);
-  }
-}, [battleId, battleData]);
+    // fallback to index from URL
+    setCurrentIndex(urlIndex);
+  }, [battleId, urlIndex, battleData]);
 
-
-
-  /* -------------------- LOAD DATA (ON BATTLE CHANGE ONLY) -------------------- */
+  /* ---------------- LOAD SAVED DATA ---------------- */
   useEffect(() => {
-    if (!battle) return;
+    const saved = getBattleData(`${battleType}-${currentIndex}`);
 
-    const saved = getBattleData(`${battleType}-${battle.id}`);
-
-    setVotesA(saved?.votesA ?? 0);
-    setVotesB(saved?.votesB ?? 0);
-    setOpinions(saved?.opinions ?? []);
-    setHasVoted(saved?.hasVoted ?? false);
+    if (saved) {
+      setVotesA(saved.votesA);
+      setVotesB(saved.votesB);
+      setOpinions(saved.opinions || []);
+      setHasVoted(saved.hasVoted);
+    } else {
+      setVotesA(0);
+      setVotesB(0);
+      setOpinions([]);
+      setHasVoted(false);
+    }
 
     setOpinionText("");
     setShowOpinions(false);
     setSelectedOption(null);
-  }, [battle?.id, battleType]);
+  }, [battleType, currentIndex]);
 
+  /* ---------------- SAVE DATA ---------------- */
   useEffect(() => {
-  const counts = {};
-  Object.keys(battleDataMap).forEach((type) => {
-    counts[type] = battleDataMap[type]?.length || 0;
-  });
-  localStorage.setItem("staticBattleCounts", JSON.stringify(counts));
-}, []);
+    saveBattleData(`${battleType}-${currentIndex}`, {
+      votesA,
+      votesB,
+      opinions,
+      hasVoted,
+    });
+  }, [votesA, votesB, opinions, hasVoted, battleType, currentIndex]);
 
-
-  /* -------------------- CALCULATIONS -------------------- */
-  if (!battle) {
-    return (
-      <div className="battle-page">
-        <h1>Battle not found</h1>
-      </div>
-    );
-  }
-
+  /* ---------------- CALCULATIONS ---------------- */
   const totalVotes = votesA + votesB;
 
   const percentA =
@@ -125,8 +119,8 @@ function Battle() {
     votesA === votesB
       ? null
       : votesA > votesB
-      ? battle.optionA
-      : battle.optionB;
+      ? battle?.optionA
+      : battle?.optionB;
 
   const topOpinion =
     opinions.length === 0
@@ -135,44 +129,30 @@ function Battle() {
           (a, b) => (b.likes || []).length - (a.likes || []).length
         )[0];
 
-  /* -------------------- ACTIONS (SAVE HERE, NOT IN useEffect) -------------------- */
+  /* ---------------- ACTIONS ---------------- */
   const voteA = () => {
     if (hasVoted) return;
-
-    const newVotesA = votesA + 1;
-    setVotesA(newVotesA);
+    setVotesA((v) => v + 1);
     setSelectedOption(battle.optionA);
     setHasVoted(true);
-
-    saveBattleData(`${battleType}-${battle.id}`, {
-      votesA: newVotesA,
-      votesB,
-      opinions,
-      hasVoted: true,
-    });
+    setShowVoteConfirm(true);
+    setTimeout(() => setShowVoteConfirm(false), 2000);
   };
 
   const voteB = () => {
     if (hasVoted) return;
-
-    const newVotesB = votesB + 1;
-    setVotesB(newVotesB);
+    setVotesB((v) => v + 1);
     setSelectedOption(battle.optionB);
     setHasVoted(true);
-
-    saveBattleData(`${battleType}-${battle.id}`, {
-      votesA,
-      votesB: newVotesB,
-      opinions,
-      hasVoted: true,
-    });
+    setShowVoteConfirm(true);
+    setTimeout(() => setShowVoteConfirm(false), 2000);
   };
 
   const submitOpinion = () => {
     if (!opinionText.trim() || !selectedOption) return;
 
-    const updatedOpinions = [
-      ...opinions,
+    setOpinions((prev) => [
+      ...prev,
       {
         id: Date.now(),
         userId,
@@ -180,54 +160,42 @@ function Battle() {
         text: opinionText,
         likes: [],
       },
-    ];
+    ]);
 
-    setOpinions(updatedOpinions);
     setOpinionText("");
-
-    saveBattleData(`${battleType}-${battle.id}`, {
-      votesA,
-      votesB,
-      opinions: updatedOpinions,
-      hasVoted,
-    });
   };
 
-  const likeOpinion = (opinionId) => {
+  const likeOpinion = (id) => {
     if (!currentUser) return;
 
-    const updatedOpinions = opinions.map((op) => {
-      if (op.id !== opinionId) return op;
-      if (op.userId === userId) return op;
-      if ((op.likes || []).includes(userId)) return op;
+    setOpinions((prev) =>
+      prev.map((op) => {
+        if (op.id !== id) return op;
+        if (op.userId === userId) return op;
+        if (op.likes.includes(userId)) return op;
 
-      return {
-        ...op,
-        likes: [...(op.likes || []), userId],
-      };
-    });
-
-    setOpinions(updatedOpinions);
-
-    saveBattleData(`${battleType}-${battle.id}`, {
-      votesA,
-      votesB,
-      opinions: updatedOpinions,
-      hasVoted,
-    });
+        return { ...op, likes: [...op.likes, userId] };
+      })
+    );
   };
 
   const nextBattle = () => {
     const nextIndex = (currentIndex + 1) % battleData.length;
-
-    setSearchParams({
-      type: battleType,
-      index: nextIndex,
-      ...(genre ? { genre } : {}),
-    });
+    setSearchParams({ type: battleType, index: nextIndex });
   };
 
-  /* -------------------- RENDER -------------------- */
+  /* ---------------- RENDER ---------------- */
+  if (!battle) {
+    return (
+      <div className="battle-page not-found">
+        <h1>😕 Battle not found</h1>
+        <p>This battle may have been removed or is no longer available.</p>
+
+        <button onClick={() => navigate("/")}>Go back home</button>
+      </div>
+    );
+  }
+
   return (
     <div className="battle-page">
       <BattleHeader
@@ -236,15 +204,11 @@ function Battle() {
         total={battleData.length}
       />
 
-      <div style={{ color: "#94a3b8", marginBottom: "14px" }}>
-        Category: <strong>{battleType}</strong>
-      </div>
-
       <div className="battle-area">
         <div
           className={`battle-poster ${
-            winner === battle.optionA ? "winner" : ""
-          }`}
+            selectedOption === battle.optionA ? "selected" : ""
+          } ${winner === battle.optionA ? "winner" : ""}`}
         >
           {battle.optionA}
         </div>
@@ -253,8 +217,8 @@ function Battle() {
 
         <div
           className={`battle-poster ${
-            winner === battle.optionB ? "winner" : ""
-          }`}
+            selectedOption === battle.optionB ? "selected" : ""
+          } ${winner === battle.optionB ? "winner" : ""}`}
         >
           {battle.optionB}
         </div>
@@ -267,6 +231,10 @@ function Battle() {
         onVoteA={voteA}
         onVoteB={voteB}
       />
+
+      {showVoteConfirm && (
+        <div className="vote-confirm">✅ Your vote has been counted</div>
+      )}
 
       {currentUser ? (
         <OpinionSection
@@ -282,12 +250,7 @@ function Battle() {
           topOpinion={topOpinion}
         />
       ) : (
-        <div style={{ marginTop: "30px", textAlign: "center" }}>
-          <p style={{ color: "#94a3b8" }}>
-            Login to share your opinion and like others.
-          </p>
-          <a href="/login">Login</a>
-        </div>
+        <p className="login-hint">Login to share opinions and like others.</p>
       )}
 
       <ResultsSection
@@ -299,9 +262,9 @@ function Battle() {
         percentB={percentB}
       />
 
-      <div style={{ marginTop: "40px" }}>
-        <button onClick={nextBattle}>Next Battle →</button>
-      </div>
+      <button className="next-btn" onClick={nextBattle}>
+        Next Battle <span>→</span>
+      </button>
     </div>
   );
 }

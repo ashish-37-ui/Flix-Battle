@@ -86,7 +86,7 @@ function OpinionSection({
                   className="like-btn"
                   onClick={() => likeOpinion(op.id)}
                 >
-                  Like
+                  👍 Like
                 </button>
               )}
           </div>

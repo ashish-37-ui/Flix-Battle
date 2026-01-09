@@ -8,7 +8,6 @@ import { getBattleOfTheDay } from "../utils/battleOfTheDay";
 import { getCurrentUser } from "../utils/auth";
 import { getRecentBattles } from "../utils/discovery";
 
-
 function Home() {
   const navigate = useNavigate();
 
@@ -20,15 +19,13 @@ function Home() {
   const [popularBattles, setPopularBattles] = useState([]);
   const [recentBattles, setRecentBattles] = useState([]);
 
-  
-
   useEffect(() => {
     setPopularBattles(getPopularBattles());
   }, []);
 
   useEffect(() => {
-  setRecentBattles(getRecentBattles());
-}, []);
+    setRecentBattles(getRecentBattles());
+  }, []);
 
   return (
     <>
@@ -78,10 +75,14 @@ function Home() {
       )}
 
       {/* 🔥 POPULAR BATTLES */}
-      {popularBattles.length > 0 && (
-        <section className="popular-battles">
-          <h2>🔥 Popular Battles</h2>
+      <section className="popular-battles">
+        <h2>🔥 Popular Battles</h2>
 
+        {popularBattles.length === 0 ? (
+          <p className="empty-state">
+            No battles trending yet. Start voting to shape trends 🔥
+          </p>
+        ) : (
           <div className="battle-feed">
             {popularBattles.map((b, i) => (
               <div
@@ -89,7 +90,6 @@ function Home() {
                 className="battle-feed-card"
                 onClick={() =>
                   navigate(`/battle?type=${b.type}&battleId=${b.id}`)
-
                 }
               >
                 <div className="feed-title">{b.title}</div>
@@ -104,41 +104,43 @@ function Home() {
               </div>
             ))}
           </div>
-        </section>
-      )}
+        )}
+      </section>
 
       {/* ✨ RECENT BATTLES */}
-{recentBattles.length > 0 && (
-  <section className="recent-battles">
-    <h2>✨ Recently Created</h2>
+      <section className="recent-battles">
+        <h2>✨ Recently Created</h2>
 
-    <div className="battle-feed">
-      {recentBattles.map((b, i) => (
-        <div
-          key={i}
-          className="battle-feed-card"
-          onClick={() =>
-            navigate(`/battle?type=${b.type}&battleId=${b.id}`)
+        {recentBattles.length === 0 ? (
+          <p className="empty-state">
+            No custom battles yet. Be the first to create one! 🚀
+          </p>
+        ) : (
+          <div className="battle-feed">
+            {recentBattles.map((b, i) => (
+              <div
+                key={i}
+                className="battle-feed-card"
+                onClick={() =>
+                  navigate(`/battle?type=${b.type}&battleId=${b.id}`)
+                }
+              >
+                <span className="new-badge">NEW</span>
 
-          }
-        >
-          <div className="feed-title">{b.title}</div>
+                <div className="feed-title">{b.title}</div>
 
-          <div className="feed-options">
-            <span>{b.optionA}</span>
-            <strong>VS</strong>
-            <span>{b.optionB}</span>
+                <div className="feed-options">
+                  <span>{b.optionA}</span>
+                  <strong>VS</strong>
+                  <span>{b.optionB}</span>
+                </div>
+
+                <div className="feed-meta">Created just now</div>
+              </div>
+            ))}
           </div>
-
-          <div className="feed-meta">
-            Created just now
-          </div>
-        </div>
-      ))}
-    </div>
-  </section>
-)}
-
+        )}
+      </section>
 
       {/* ✨ CREATE CUSTOM BATTLE */}
       <section className="create-battle">
