@@ -1,1 +1,2 @@
+MONGO_URI=mongodb+srv://aashish15email_db_user:irving005@cluster-flixbattle.6qoeskh.mongodb.net/flixbattle
 PORT=5000
