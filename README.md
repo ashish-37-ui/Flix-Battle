@@ -1,3 +1,6 @@
+( BACKEND HAS BEEN STARTED )
+
+
 # FlixBattle 🎬🔥
 
 FlixBattle is an interactive voting platform where users compare two options,
