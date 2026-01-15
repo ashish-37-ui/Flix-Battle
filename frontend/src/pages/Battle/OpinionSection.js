@@ -3,7 +3,7 @@ function OpinionSection({
   opinionText,
   setOpinionText,
   onSubmit,
-  opinions,
+  opinions=[],
   showOpinions,
   toggleOpinions,
   likeOpinion,
