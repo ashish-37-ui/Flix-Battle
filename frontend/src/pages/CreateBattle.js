@@ -11,38 +11,39 @@ function CreateBattle() {
   const [optionA, setOptionA] = useState("");
   const [optionB, setOptionB] = useState("");
 
-  const createBattle = () => {
-    if (!optionA.trim() || !optionB.trim()) return;
+  const createBattle = async () => {
+  if (!optionA.trim() || !optionB.trim()) return;
 
-    // 🔑 Load existing custom battles safely
-    const stored = JSON.parse(localStorage.getItem("customBattles")) || {
-      movies: [],
-      tv: [],
-      actors: [],
-      singers: [],
-    };
+  try {
+    const response = await fetch("http://localhost:5000/api/battles", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: "User Created Battle",
+        type,
+        optionA,
+        optionB,
+        createdBy: "frontend-user", // later replace with auth user
+      }),
+    });
 
-    const newBattle = {
-      id: Date.now(),
-      title: "User Created Battle",
-      optionA,
-      optionB,
-      type,
-      source: "custom",
-      createdAt: Date.now(),
-    };
+    const data = await response.json();
 
-    // 🔑 Append battle to correct category
-    stored[type].push(newBattle);
+    if (!data.success) {
+      alert("Failed to create battle");
+      return;
+    }
 
-    localStorage.setItem("customBattles", JSON.stringify(stored));
+    // ✅ ONE navigation — backend ID based
+    navigate(`/battle?battleId=${data.battle._id}`);
+  } catch (error) {
+    console.error("Create battle error:", error);
+    alert("Something went wrong");
+  }
+};
 
-    // 🔑 Navigate directly to this battle
-    const defaultCount = battleDataMap[type]?.length || 0;
-    const newIndex = defaultCount + stored[type].length - 1;
-
-    navigate(`/battle?type=${type}&index=${newIndex}`);
-  };
 
   return (
     <div className="create-page">
