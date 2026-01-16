@@ -1,95 +1,126 @@
-import { Link, useNavigate } from "react-router-dom";
-import { getPopularBattles } from "../utils/discovery";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getCurrentUser } from "../utils/auth";
 
 import "./Home.css";
-import battleDataMap from "../data/battleData";
-import { getBattleOfTheDay } from "../utils/battleOfTheDay";
-import { getCurrentUser } from "../utils/auth";
-import { getRecentBattles } from "../utils/discovery";
 
 function Home() {
   const navigate = useNavigate();
-
-  // Pick movies as default for now
-  const todayBattle = getBattleOfTheDay(battleDataMap.movies);
-
   const currentUser = getCurrentUser();
 
-  const [popularBattles, setPopularBattles] = useState([]);
-  const [recentBattles, setRecentBattles] = useState([]);
+  const [battles, setBattles] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setPopularBattles(getPopularBattles());
+    const fetchBattles = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/battles");
+        const data = await res.json();
+
+        if (data.success) {
+          setBattles(data.battles);
+        }
+      } catch (err) {
+        console.error("Failed to fetch battles");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBattles();
   }, []);
 
-  useEffect(() => {
-    setRecentBattles(getRecentBattles());
-  }, []);
+  const popularBattles = [...battles]
+    .sort((a, b) => b.totalVotes - a.totalVotes)
+    .slice(0, 5);
+
+  const recentBattles = [...battles]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5);
 
   return (
     <>
-      <div className="home-page">
-        {/* 🔥 HERO SECTION */}
-        <section className="home-hero">
-          <h1>
-            Pick a side.
-            <br />
-            <span>Defend your choice.</span>
-          </h1>
+      {/* 🔥 HERO */}
+      <section className="home-hero">
+        <h1>
+          Pick a side.
+          <br />
+          <span>Defend your choice.</span>
+        </h1>
 
-          <p>
-            Vote between iconic movies, actors, TV shows, or anything. Share
-            your opinion and see what the world thinks.
-          </p>
+        <p>
+          Vote between iconic movies, actors, TV shows, or anything.
+          Share your opinion and see what the world thinks.
+        </p>
+        <button
+    className="hero-scroll-btn"
+    onClick={() =>
+      document
+        .getElementById("battle-categories")
+        ?.scrollIntoView({ behavior: "smooth" })
+    }
+  >
+    Choose a Battle Type ↓
+  </button>
+      </section>
 
-          <button
-            className="primary-btn hero-btn"
-            onClick={() =>
-              document
-                .querySelector(".battle-type-section")
-                .scrollIntoView({ behavior: "smooth" })
-            }
+      {/* 🎯 CATEGORIES (MOVED UP) */}
+      <section  id="battle-categories" className="battle-type-section">
+        <h2 className="section-title">Choose a Battle Category</h2>
+
+        <div className="battle-types">
+          <div
+            className="battle-type-card"
+            onClick={() => navigate("/category/movies")}
           >
-            Choose a Battle Type ↓
-          </button>
-        </section>
-      </div>
-      {/* 🔥 BATTLE OF THE DAY */}
-      {todayBattle && (
-        <section className="battle-of-day">
-          <h2>🔥 Battle of the Day</h2>
+            🎬
+            <span>Movies</span>
+          </div>
 
           <div
-            className="battle-of-day-card"
-            onClick={() => navigate("/battle?type=movies")}
+            className="battle-type-card"
+            onClick={() => navigate("/category/actors")}
           >
-            <div className="battle-title">{todayBattle.title}</div>
-            <div className="battle-options">
-              <span>{todayBattle.optionA}</span>
-              <strong>VS</strong>
-              <span>{todayBattle.optionB}</span>
-            </div>
+            🎭
+            <span>Actors</span>
           </div>
-        </section>
-      )}
 
-      {/* 🔥 POPULAR BATTLES */}
+          <div
+            className="battle-type-card"
+            onClick={() => navigate("/category/tv")}
+          >
+            📺
+            <span>TV Series</span>
+          </div>
+
+          <div
+            className="battle-type-card"
+            onClick={() => navigate("/category/singers")}
+          >
+            🎵
+            <span>Singers</span>
+          </div>
+        </div>
+      </section>
+
+      {/* 🔥 POPULAR */}
       <section className="popular-battles">
         <h2>🔥 Popular Battles</h2>
 
-        {popularBattles.length === 0 ? (
+        {loading ? (
+          <p className="empty-state">Loading battles…</p>
+        ) : popularBattles.length === 0 ? (
           <p className="empty-state">
             No battles trending yet. Start voting to shape trends 🔥
           </p>
         ) : (
           <div className="battle-feed">
-            {popularBattles.map((b, i) => (
+            {popularBattles.map((b) => (
               <div
-                key={i}
+                key={b._id}
                 className="battle-feed-card"
                 onClick={() =>
-                  navigate(`/battle?type=${b.type}&battleId=${b.id}`)
+                  navigate(`/battle?battleId=${b._id}`)
                 }
               >
                 <div className="feed-title">{b.title}</div>
@@ -100,29 +131,33 @@ function Home() {
                   <span>{b.optionB}</span>
                 </div>
 
-                <div className="feed-meta">{b.totalVotes} votes</div>
+                <div className="feed-meta">
+                  {b.totalVotes} votes
+                </div>
               </div>
             ))}
           </div>
         )}
       </section>
 
-      {/* ✨ RECENT BATTLES */}
+      {/* ✨ RECENT */}
       <section className="recent-battles">
         <h2>✨ Recently Created</h2>
 
-        {recentBattles.length === 0 ? (
+        {loading ? (
+          <p className="empty-state">Loading battles…</p>
+        ) : recentBattles.length === 0 ? (
           <p className="empty-state">
-            No custom battles yet. Be the first to create one! 🚀
+            No battles yet. Be the first to create one! 🚀
           </p>
         ) : (
           <div className="battle-feed">
-            {recentBattles.map((b, i) => (
+            {recentBattles.map((b) => (
               <div
-                key={i}
+                key={b._id}
                 className="battle-feed-card"
                 onClick={() =>
-                  navigate(`/battle?type=${b.type}&battleId=${b.id}`)
+                  navigate(`/battle?battleId=${b._id}`)
                 }
               >
                 <span className="new-badge">NEW</span>
@@ -135,14 +170,16 @@ function Home() {
                   <span>{b.optionB}</span>
                 </div>
 
-                <div className="feed-meta">Created just now</div>
+                <div className="feed-meta">
+                  {b.totalVotes} votes
+                </div>
               </div>
             ))}
           </div>
         )}
       </section>
 
-      {/* ✨ CREATE CUSTOM BATTLE */}
+      {/* ✨ CREATE */}
       <section className="create-battle">
         <h2>Create Your Own Battle</h2>
         <p>Pick any two things and let people decide.</p>
@@ -159,44 +196,6 @@ function Home() {
         >
           Create a Battle ✨
         </button>
-      </section>
-
-      <section className="battle-type-section">
-        <h2 className="section-title">What do you want to battle?</h2>
-
-        <div className="battle-types">
-          <div
-            className="battle-type-card"
-            onClick={() => navigate("/battle?type=movies")}
-          >
-            🎬
-            <span>Movies</span>
-          </div>
-
-          <div
-            className="battle-type-card"
-            onClick={() => navigate("/battle?type=actors")}
-          >
-            🎭
-            <span>Actors</span>
-          </div>
-
-          <div
-            className="battle-type-card"
-            onClick={() => navigate("/battle?type=tv")}
-          >
-            📺
-            <span>TV Series</span>
-          </div>
-
-          <div
-            className="battle-type-card"
-            onClick={() => navigate("/battle?type=singers")}
-          >
-            🎵
-            <span>Singers</span>
-          </div>
-        </div>
       </section>
     </>
   );

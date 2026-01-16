@@ -1,37 +1,58 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getCurrentUser, logoutUser } from "../utils/auth";
 
 import "./Navbar.css";
 
-function Navbar({ currentUser, setCurrentUser }) {
-  const user = getCurrentUser();
-
-  const handleLogout = () => {
-    logoutUser();
-    window.location.reload();
-    setCurrentUser(null);
-  };
+function Navbar() {
+  const navigate = useNavigate();
+  const currentUser = getCurrentUser();
 
   return (
     <nav className="navbar">
-      <div className="nav-left">
-        <Link to="/">FlixBattle</Link>
+      {/* 🔹 LOGO */}
+      <div className="navbar-left" onClick={() => navigate("/")}>
+        FlixBattle
       </div>
 
-      <div className="nav-center">
+      {/* 🔹 NAV LINKS */}
+      <div className="navbar-center">
         <Link to="/">Home</Link>
-        <Link to="/battle">Battle</Link>
         <Link to="/trends">Trends</Link>
+
+        {currentUser && (
+          <span
+            className="create-link"
+            onClick={() => navigate("/create")}
+          >
+            + Create
+          </span>
+        )}
       </div>
 
-      <div className="nav-right">
-        {currentUser ? (
-          <div className="user-menu">
-            <span className="username">👤 {currentUser.username}</span>
-            <button onClick={handleLogout}>Logout</button>
-          </div>
+      {/* 🔹 AUTH */}
+      <div className="navbar-right">
+        {!currentUser ? (
+          <span
+            className="nav-link"
+            onClick={() => navigate("/login")}
+          >
+            Login
+          </span>
         ) : (
-          <Link to="/login">Login</Link>
+          <div className="profile-menu">
+            <span className="profile-name">
+              {currentUser.username || "Profile"}
+            </span>
+            <span
+              className="logout-link"
+              onClick={() => {
+                logoutUser();
+                navigate("/");
+              }}
+            >
+              Logout
+            </span>
+          </div>
         )}
       </div>
     </nav>

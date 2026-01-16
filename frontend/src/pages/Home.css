@@ -229,6 +229,23 @@
   margin-top: 20px;
 }
 
+.hero-scroll-btn {
+  margin-top: 18px;
+  background: transparent;
+  border: 1px solid #333;
+  color: #ccc;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.hero-scroll-btn:hover {
+  border-color: #555;
+  color: #fff;
+}
+
+
 @media (max-width: 768px) {
   .home-hero {
     padding: 60px 16px 40px;

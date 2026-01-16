@@ -1,0 +1,61 @@
+.category-page {
+  padding: 40px 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.category-header {
+  margin-bottom: 30px;
+}
+
+.category-header h1 {
+  font-size: 32px;
+  margin-bottom: 6px;
+}
+
+.category-header p {
+  color: #888;
+  font-size: 14px;
+}
+
+.battle-feed {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.battle-feed-card {
+  background: #111;
+  border: 1px solid #222;
+  padding: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.battle-feed-card:hover {
+  transform: translateY(-2px);
+  border-color: #22c55e;
+}
+
+.feed-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.feed-options {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.feed-meta {
+  font-size: 13px;
+  color: #999;
+}
+
+.empty-state {
+  color: #888;
+  margin-top: 20px;
+}

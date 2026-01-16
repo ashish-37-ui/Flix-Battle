@@ -1,92 +1,65 @@
 .navbar {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 16px 40px;
-  border-bottom: 1px solid #334155;
+  align-items: center;
+  padding: 14px 28px;
+  background: #0b0b0b;
+  border-bottom: 1px solid #1f1f1f;
 }
 
-.nav-left,
-.nav-center,
-.nav-right {
+.navbar-left {
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.navbar-center {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
 }
 
-.nav-center {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.user-menu {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.username {
+.navbar-center a,
+.nav-link,
+.create-link {
   font-size: 14px;
-  color: #94a3b8;
-}
-
-.navbar a {
-  color: #e5e7eb;
+  color: #cfcfcf;
+  cursor: pointer;
   text-decoration: none;
 }
 
-.navbar button {
-  padding: 6px 12px;
+.navbar-center a:hover,
+.nav-link:hover,
+.create-link:hover {
+  color: #ffffff;
+}
+
+.create-link {
+  opacity: 0.85;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.profile-menu {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.profile-name {
+  font-size: 14px;
+  color: #aaa;
+}
+
+.logout-link {
   font-size: 13px;
+  color: #888;
+  cursor: pointer;
 }
 
-@media (max-width: 768px) {
-  .navbar {
-    padding: 10px 14px;
-  }
-
-  .navbar-logo {
-    font-size: 18px;
-  }
+.logout-link:hover {
+  color: #fff;
 }
-
-@media (max-width: 768px) {
-  .navbar-actions {
-    gap: 10px;
-  }
-
-  .navbar-actions button {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 768px) {
-  .user-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-  }
-
-  .logout-btn {
-    padding: 6px 10px;
-    font-size: 13px;
-  }
-}
-
-@media (max-width: 768px) {
-  .navbar a,
-  .navbar button {
-    min-height: 40px;
-  }
-}
-
-@media (max-width: 768px) {
-  .navbar {
-    border-bottom: 1px solid #1e293b;
-  }
-}
-
-

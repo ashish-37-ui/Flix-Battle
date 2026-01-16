@@ -9,6 +9,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import Navbar from "./components/Navbar";
 import CreateBattle from "./pages/CreateBattle";
 import Login from "./pages/Login";
+import CategoryBattles from "./pages/CategoryBattles";
 
 function App() {
   const [currentUser, setCurrentUser] = useState(getCurrentUser());
@@ -21,8 +22,15 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/battle" element={<Battle />} />
+
+
+        {/* ❌ NO generic /battle route */}
+        {/* Battle page is accessed only via /battle?battleId= */}
+
         <Route path="/trends" element={<Trends />} />
         <Route path="/create" element={<CreateBattle />} />
+        <Route path="/category/:type" element={<CategoryBattles />} />
+
         <Route
           path="/login"
           element={
