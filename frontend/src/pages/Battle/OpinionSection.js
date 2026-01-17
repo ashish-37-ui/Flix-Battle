@@ -1,9 +1,12 @@
+import "./OpinionSection.css";
+
+
 function OpinionSection({
   hasVoted,
   opinionText,
   setOpinionText,
   onSubmit,
-  opinions=[],
+  opinions = [],
   showOpinions,
   toggleOpinions,
   likeOpinion,
@@ -11,92 +14,104 @@ function OpinionSection({
   topOpinion,
 }) {
   return (
-    <>
-      {/* ✍️ Write Opinion */}
+    <div className="opinions-wrapper">
+      {/* ✍️ WRITE OPINION */}
       {hasVoted && (
-        <div className="opinion-card">
-          <h3>💬 Why did you choose this?</h3>
+        <div className="opinion-card write-card">
+          <h3 className="opinion-title">💬 Why did you choose this?</h3>
 
           <textarea
             value={opinionText}
             onChange={(e) => setOpinionText(e.target.value)}
             rows={3}
-            placeholder="What made this better for you?"
+            placeholder="Share your reasoning in a line or two…"
             className="opinion-input"
+            maxLength={200}
           />
 
           <div className="opinion-actions">
-            <button onClick={onSubmit} className="primary-btn">
-              Submit Opinion
+            <button
+              onClick={onSubmit}
+              className="primary-btn"
+              disabled={!opinionText.trim()}
+            >
+              Post Opinion
             </button>
 
-            <button className="secondary-btn">✨ Share my thought</button>
+            <span className="char-hint">
+              {opinionText.length}/200
+            </span>
           </div>
-        </div>
-      )}
-
-      {/* 👀 View / Hide Opinions */}
-      {opinions.length > 0 && (
-        <div style={{ marginTop: "30px" }}>
-          <button onClick={toggleOpinions}>
-             {showOpinions ? "⬆ Hide opinions" : `⬇ View opinions (${opinions.length})`}
-
-          </button>
         </div>
       )}
 
       {/* 🔥 TOP OPINION */}
       {topOpinion && (topOpinion.likes || []).length > 0 && (
-        <div
-          style={{
-            marginTop: "20px",
-            padding: "12px",
-            border: "1px solid #22c55e",
-            borderRadius: "6px",
-            background: "#052e16",
-          }}
-        >
-          <strong>🔥 Top Opinion</strong>
-          <p style={{ marginTop: "6px" }}>{topOpinion.text}</p>
-          <div style={{ fontSize: "14px", marginTop: "4px" }}>
-            👍 {(topOpinion.likes || []).length}
+        <div className="opinion-card top-opinion">
+          <div className="top-opinion-header">
+            🔥 Top Opinion
+          </div>
+
+          <p className="opinion-text">
+            {topOpinion.text}
+          </p>
+
+          <div className="opinion-meta">
+            👍 {(topOpinion.likes || []).length} likes
           </div>
         </div>
       )}
 
-      {/* 💬 Opinions List */}
+      {/* 👀 TOGGLE OPINIONS */}
+      {opinions.length > 0 && (
+        <div className="opinions-toggle">
+          <button onClick={toggleOpinions}>
+            {showOpinions
+              ? "⬆ Hide community opinions"
+              : `⬇ View community opinions (${opinions.length})`}
+          </button>
+        </div>
+      )}
+
+      {/* 💬 COMMUNITY OPINIONS */}
       {showOpinions && (
-  <div className="opinions-panel">
-    <div className="opinions-header">
-      💬 Community Opinions
-    </div>
+        <div className="opinions-panel">
+          <div className="opinions-header">
+            💬 Community Opinions
+          </div>
 
-    <div className="opinions-list">
-      {opinions.map((op) => (
-        <div key={op.id} className="opinion-item">
-          <strong>{op.option}</strong>
-          <p>{op.text}</p>
+          <div className="opinions-list">
+            {opinions.map((op) => (
+              <div key={op.id} className="opinion-item">
+                <div className="opinion-badge">
+                  Picked {op.option}
+                </div>
 
-          <div className="opinion-meta">
-            👍 {(op.likes || []).length} likes
+                <p className="opinion-text">
+                  {op.text}
+                </p>
 
-            {op.userId !== userId &&
-              !(op.likes || []).includes(userId) && (
-                <button
-                  className="like-btn"
-                  onClick={() => likeOpinion(op.id)}
-                >
-                  👍 Like
-                </button>
-              )}
+                <div className="opinion-meta">
+                  <span>
+                    👍 {(op.likes || []).length}
+                  </span>
+
+                  {op.userId !== userId &&
+                    !(op.likes || []).includes(userId) && (
+                      <button
+                        className="like-btn"
+                        onClick={() => likeOpinion(op.id)}
+                      >
+                        Like
+                      </button>
+                    )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      ))}
+      )}
     </div>
-  </div>
-)}
-
-    </>
   );
 }
 

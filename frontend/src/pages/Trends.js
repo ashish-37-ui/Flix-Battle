@@ -1,117 +1,113 @@
 import { useEffect, useState } from "react";
-import { getAllBattleStats } from "../utils/trends";
 import { useNavigate } from "react-router-dom";
 
 import "./Trends.css";
 
 function Trends() {
-  const [stats, setStats] = useState([]);
-
   const navigate = useNavigate();
 
+  const [battles, setBattles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    setStats(getAllBattleStats());
+    const fetchBattles = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/battles");
+        const data = await res.json();
+
+        if (data.success) {
+          setBattles(data.battles);
+        }
+      } catch (err) {
+        console.error("Failed to load trends");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBattles();
   }, []);
 
-  const mostVoted = [...stats]
+  if (loading) {
+    return <p className="empty-state">Loading trends…</p>;
+  }
+
+  // 🔥 Most voted
+  const mostVoted = [...battles]
     .sort((a, b) => b.totalVotes - a.totalVotes)
     .slice(0, 5);
 
-  const categoryStats = stats.reduce((acc, item) => {
-    acc[item.type] = (acc[item.type] || 0) + item.totalVotes;
-    return acc;
-  }, {});
-
-  const trendingCategories = Object.entries(categoryStats).sort(
-    (a, b) => b[1] - a[1]
-  );
-
-  const mostLikedOpinions = stats
-    .flatMap((s) => s.opinions)
-    .sort((a, b) => (b.likes || []).length - (a.likes || []).length)
+  // ⚡ Hot right now (recent + votes)
+  const hotNow = [...battles]
+    .filter((b) => b.totalVotes > 0)
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt) - new Date(a.createdAt) ||
+        b.totalVotes - a.totalVotes
+    )
     .slice(0, 5);
 
-  const categoryIcons = {
-    movies: "🎬",
-    actors: "🎭",
-    tv: "📺",
-    singers: "🎵",
-    custom: "✨",
-  };
+  // 🎬 Category-wise top battle
+  const categories = ["movies", "actors", "tv", "singers"];
+  const categoryTrends = categories.map((cat) =>
+    battles
+      .filter((b) => b.type === cat)
+      .sort((a, b) => b.totalVotes - a.totalVotes)[0]
+  );
+
+  const renderBattleCard = (b) => (
+    <div
+      key={b._id}
+      className="battle-feed-card"
+      onClick={() => navigate(`/battle?battleId=${b._id}`)}
+    >
+      <div className="feed-title">{b.title}</div>
+
+      <div className="feed-options">
+        <span>{b.optionA}</span>
+        <strong>VS</strong>
+        <span>{b.optionB}</span>
+      </div>
+
+      <div className="feed-meta">{b.totalVotes} votes</div>
+    </div>
+  );
 
   return (
     <div className="trends-page">
       <h1>🔥 Trends</h1>
 
-      {/* MOST VOTED */}
-      <section className="trend-section">
-        <h2>🏆 Most Voted Battles</h2>
-
-        {mostVoted.length === 0 && (
-          <p className="empty-state">No battles voted yet.</p>
-        )}
-
-        <div className="trend-grid">
-          {mostVoted.map((b, i) => (
-            <div
-              key={i}
-              className="trend-card clickable"
-              onClick={() =>
-                navigate(`/battle?type=${b.type}&index=${b.index}`)
-              }
-            >
-              <div className="trend-tag">
-                {categoryIcons[b.type]} {b.type.toUpperCase()}
-              </div>
-              <div className="trend-value">{b.totalVotes} votes</div>
-            </div>
-          ))}
+      {/* 🔥 MOST VOTED */}
+      <section>
+        <h2>🔥 Most Voted Battles</h2>
+        <div className="battle-feed">
+          {mostVoted.length === 0 ? (
+            <p className="empty-state">No votes yet</p>
+          ) : (
+            mostVoted.map(renderBattleCard)
+          )}
         </div>
       </section>
 
-      {/* 📊 TRENDING CATEGORIES */}
-      <section className="trend-section">
-        <h2>📊 Trending Categories</h2>
-
-        {trendingCategories.length === 0 && (
-          <p className="empty-state">No activity yet.</p>
-        )}
-
-        <div className="trend-grid">
-          {mostVoted.map((b, i) => (
-            <div
-              key={i}
-              className="trend-card clickable"
-              onClick={() =>
-                navigate(`/battle?type=${b.type}&index=${b.index}`)
-              }
-            >
-              <div className="trend-tag">
-                {categoryIcons[b.type]} {b.type.toUpperCase()}
-              </div>
-              <div className="trend-value">{b.totalVotes} votes</div>
-            </div>
-          ))}
+      {/* ⚡ HOT RIGHT NOW */}
+      <section>
+        <h2>⚡ Hot Right Now</h2>
+        <div className="battle-feed">
+          {hotNow.length === 0 ? (
+            <p className="empty-state">No active battles</p>
+          ) : (
+            hotNow.map(renderBattleCard)
+          )}
         </div>
       </section>
 
-      {/* TOP OPINIONS */}
-      <section className="trend-section">
-        <h2>💬 Top Opinions</h2>
-
-        {mostLikedOpinions.length === 0 && (
-          <p className="empty-state">No opinions yet.</p>
-        )}
-
-        <div className="trend-list">
-          {mostLikedOpinions.map((op, i) => (
-            <div key={i} className="opinion-card">
-              <p className="opinion-text">“{op.text}”</p>
-              <span className="opinion-likes">
-                👍 {(op.likes || []).length}
-              </span>
-            </div>
-          ))}
+      {/* 🎬 CATEGORY TRENDS */}
+      <section>
+        <h2>🎬 Category Trends</h2>
+        <div className="battle-feed">
+          {categoryTrends.map(
+            (b) => b && renderBattleCard(b)
+          )}
         </div>
       </section>
     </div>

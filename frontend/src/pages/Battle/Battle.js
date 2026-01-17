@@ -13,14 +13,18 @@ function Battle() {
 
   const battleId = searchParams.get("battleId");
 
-  // TEMP user identity (will come from auth later)
-  const userId = "user1";
-
   const [battle, setBattle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 🔹 Fetch battle (WITH user identity)
+  // ✅ voting state
+  const [hasVoted, setHasVoted] = useState(false);
+  const [userVote, setUserVote] = useState(null);
+
+  // 📝 opinion UI state (UI only for now)
+  const [opinionText, setOpinionText] = useState("");
+  const [showOpinions, setShowOpinions] = useState(false);
+
   useEffect(() => {
     if (!battleId) {
       setError("No battle ID provided");
@@ -31,22 +35,25 @@ function Battle() {
     const fetchBattle = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/battles/${battleId}?userId=${userId}`
+          `http://localhost:5000/api/battles/${battleId}?userId=frontend-user`
         );
         const data = await res.json();
 
         if (!data.success) {
-          setError(data.message || "Battle not found");
+          setError(data.message);
           setLoading(false);
           return;
         }
 
-        // ✅ Backend is source of truth
         setBattle({
           ...data.battle,
-          votes: data.votes || { A: 0, B: 0 },
-          userVote: data.userVote || null,
+          votesA: data.votes.A,
+          votesB: data.votes.B,
         });
+
+        // ✅ restore vote state on refresh
+        setHasVoted(!!data.userVote);
+        setUserVote(data.userVote);
 
         setLoading(false);
       } catch (err) {
@@ -58,8 +65,9 @@ function Battle() {
     fetchBattle();
   }, [battleId]);
 
-  // 🔹 Vote handler
+  // 🗳️ vote handler
   const vote = async (option) => {
+    if (hasVoted) return;
     try {
       const res = await fetch(
         `http://localhost:5000/api/battles/${battle._id}/vote`,
@@ -68,21 +76,23 @@ function Battle() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             option,
-            userId,
+            userId: "frontend-user", // later replace with auth user
           }),
         }
       );
 
       const data = await res.json();
-
       if (!data.success) return;
 
-      // ✅ Update from backend response only
+      // ✅ backend is source of truth
       setBattle((prev) => ({
         ...prev,
-        votes: data.votes,
-        userVote: data.userVote,
+        votesA: data.votes.A,
+        votesB: data.votes.B,
       }));
+
+      setHasVoted(true);
+      setUserVote(option);
     } catch (err) {
       console.error("Vote failed", err);
     }
@@ -99,23 +109,13 @@ function Battle() {
     );
   }
 
-  // 🔹 SAFE vote derivation (no NaN possible)
-  const votesA = battle?.votes?.A ?? 0;
-  const votesB = battle?.votes?.B ?? 0;
-  const totalVotes = votesA + votesB;
-
-  const percentA =
-    totalVotes === 0 ? 0 : Math.round((votesA / totalVotes) * 100);
-
-  const percentB =
-    totalVotes === 0 ? 0 : Math.round((votesB / totalVotes) * 100);
-
-  const hasVoted = !!battle?.userVote;
+  const totalVotes = battle.votesA + battle.votesB;
 
   return (
     <div className="battle-page">
       <BattleHeader title={battle.title} />
 
+      {/* 🗳️ VOTE */}
       <VoteSection
         optionA={battle.optionA}
         optionB={battle.optionB}
@@ -124,16 +124,36 @@ function Battle() {
         onVoteB={() => vote("B")}
       />
 
+      {/* 📊 RESULTS */}
       <ResultsSection
         optionA={battle.optionA}
         optionB={battle.optionB}
-        votesA={votesA}
-        votesB={votesB}
-        percentA={percentA}
-        percentB={percentB}
+        votesA={battle.votesA}
+        votesB={battle.votesB}
+        percentA={
+          totalVotes === 0 ? 0 : Math.round((battle.votesA / totalVotes) * 100)
+        }
+        percentB={
+          totalVotes === 0 ? 0 : Math.round((battle.votesB / totalVotes) * 100)
+        }
       />
 
-      <OpinionSection opinions={battle.opinions || []} />
+      {/* 💬 OPINIONS */}
+      <OpinionSection
+        hasVoted={hasVoted}
+        opinionText={opinionText}
+        setOpinionText={setOpinionText}
+        onSubmit={() => {
+          // backend opinion submit comes later
+          setOpinionText("");
+        }}
+        opinions={battle.opinions || []}
+        showOpinions={showOpinions}
+        toggleOpinions={() => setShowOpinions((s) => !s)}
+        likeOpinion={() => {}}
+        userId="frontend-user"
+        topOpinion={null}
+      />
     </div>
   );
 }

@@ -4,7 +4,7 @@ function VoteSection({ optionA, optionB, hasVoted, onVoteA, onVoteB }) {
       <button
         disabled={hasVoted}
         title={hasVoted ? "You have already voted" : ""}
-        onClick={onVoteA}
+        onClick={!hasVoted ? onVoteA : undefined}
       >
         Vote {optionA}
       </button>
@@ -12,7 +12,7 @@ function VoteSection({ optionA, optionB, hasVoted, onVoteA, onVoteB }) {
       <button
         disabled={hasVoted}
         title={hasVoted ? "You have already voted" : ""}
-        onClick={onVoteB}
+        onClick={!hasVoted ? onVoteB : undefined}
       >
         Vote {optionB}
       </button>
