@@ -6,7 +6,7 @@
 FlixBattle is an interactive voting platform where users compare two options,
 vote for their favorite, share opinions, and see what the community thinks.
 
-Battles can be about movies, actors, TV series, singers — or anything users create themselves.
+Battles can be about movies, actors, TV series, singers, sports — or anything users create themselves.
 
 ---
 
