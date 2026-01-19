@@ -43,16 +43,17 @@ function Trends() {
     .sort(
       (a, b) =>
         new Date(b.createdAt) - new Date(a.createdAt) ||
-        b.totalVotes - a.totalVotes
+        b.totalVotes - a.totalVotes,
     )
     .slice(0, 5);
 
   // 🎬 Category-wise top battle
   const categories = ["movies", "actors", "tv", "singers"];
-  const categoryTrends = categories.map((cat) =>
-    battles
-      .filter((b) => b.type === cat)
-      .sort((a, b) => b.totalVotes - a.totalVotes)[0]
+  const categoryTrends = categories.map(
+    (cat) =>
+      battles
+        .filter((b) => b.type === cat)
+        .sort((a, b) => b.totalVotes - a.totalVotes)[0],
   );
 
   const renderBattleCard = (b) => (
@@ -82,7 +83,9 @@ function Trends() {
         <h2>🔥 Most Voted Battles</h2>
         <div className="battle-feed">
           {mostVoted.length === 0 ? (
-            <p className="empty-state">No votes yet</p>
+            <p className="empty-state">
+              🔥 No votes yet. Vote on battles to shape what trends here.
+            </p>
           ) : (
             mostVoted.map(renderBattleCard)
           )}
@@ -94,7 +97,9 @@ function Trends() {
         <h2>⚡ Hot Right Now</h2>
         <div className="battle-feed">
           {hotNow.length === 0 ? (
-            <p className="empty-state">No active battles</p>
+            <p className="empty-state">
+              ⚡ Nothing heating up yet. Recent votes will appear here.
+            </p>
           ) : (
             hotNow.map(renderBattleCard)
           )}
@@ -103,11 +108,12 @@ function Trends() {
 
       {/* 🎬 CATEGORY TRENDS */}
       <section>
-        <h2>🎬 Category Trends</h2>
+        <h2>
+          {" "}
+          📊 Category trends will appear once battles start getting votes.
+        </h2>
         <div className="battle-feed">
-          {categoryTrends.map(
-            (b) => b && renderBattleCard(b)
-          )}
+          {categoryTrends.map((b) => b && renderBattleCard(b))}
         </div>
       </section>
     </div>

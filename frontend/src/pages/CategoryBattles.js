@@ -22,7 +22,7 @@ function CategoryBattles() {
       try {
         setLoading(true);
         const res = await fetch(
-          `http://localhost:5000/api/battles?type=${type}`
+          `http://localhost:5000/api/battles?type=${type}`,
         );
         const data = await res.json();
 
@@ -55,7 +55,7 @@ function CategoryBattles() {
         <p className="empty-state">Loading battles…</p>
       ) : battles.length === 0 ? (
         <p className="empty-state">
-          No battles in this category yet. Be the first to create one! 🚀
+          Create the first battle in this category and lead the conversation.
         </p>
       ) : (
         <div className="battle-feed">
@@ -63,9 +63,7 @@ function CategoryBattles() {
             <div
               key={b._id}
               className="battle-feed-card"
-              onClick={() =>
-                navigate(`/battle?battleId=${b._id}`)
-              }
+              onClick={() => navigate(`/battle?battleId=${b._id}`)}
             >
               <div className="feed-title">{b.title}</div>
 
@@ -75,9 +73,7 @@ function CategoryBattles() {
                 <span>{b.optionB}</span>
               </div>
 
-              <div className="feed-meta">
-                {b.totalVotes} votes
-              </div>
+              <div className="feed-meta">{b.totalVotes} votes</div>
             </div>
           ))}
         </div>

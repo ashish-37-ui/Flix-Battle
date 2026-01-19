@@ -49,23 +49,23 @@ function Home() {
         </h1>
 
         <p>
-          Vote between iconic movies, actors, TV shows, or anything.
-          Share your opinion and see what the world thinks.
+          Vote between iconic movies, actors, TV shows, or anything. Share your
+          opinion and see what the world thinks.
         </p>
         <button
-    className="hero-scroll-btn"
-    onClick={() =>
-      document
-        .getElementById("battle-categories")
-        ?.scrollIntoView({ behavior: "smooth" })
-    }
-  >
-    Choose a Battle Type ↓
-  </button>
+          className="hero-scroll-btn"
+          onClick={() =>
+            document
+              .getElementById("battle-categories")
+              ?.scrollIntoView({ behavior: "smooth" })
+          }
+        >
+          Choose a Battle Type ↓
+        </button>
       </section>
 
       {/* 🎯 CATEGORIES (MOVED UP) */}
-      <section  id="battle-categories" className="battle-type-section">
+      <section id="battle-categories" className="battle-type-section">
         <h2 className="section-title">Choose a Battle Category</h2>
 
         <div className="battle-types">
@@ -119,9 +119,7 @@ function Home() {
               <div
                 key={b._id}
                 className="battle-feed-card"
-                onClick={() =>
-                  navigate(`/battle?battleId=${b._id}`)
-                }
+                onClick={() => navigate(`/battle?battleId=${b._id}`)}
               >
                 <div className="feed-title">{b.title}</div>
 
@@ -131,9 +129,7 @@ function Home() {
                   <span>{b.optionB}</span>
                 </div>
 
-                <div className="feed-meta">
-                  {b.totalVotes} votes
-                </div>
+                <div className="feed-meta">{b.totalVotes} votes</div>
               </div>
             ))}
           </div>
@@ -148,7 +144,7 @@ function Home() {
           <p className="empty-state">Loading battles…</p>
         ) : recentBattles.length === 0 ? (
           <p className="empty-state">
-            No battles yet. Be the first to create one! 🚀
+            ✨ No community battles yet. Create one and kickstart the debate.
           </p>
         ) : (
           <div className="battle-feed">
@@ -156,9 +152,7 @@ function Home() {
               <div
                 key={b._id}
                 className="battle-feed-card"
-                onClick={() =>
-                  navigate(`/battle?battleId=${b._id}`)
-                }
+                onClick={() => navigate(`/battle?battleId=${b._id}`)}
               >
                 <span className="new-badge">NEW</span>
 
@@ -170,9 +164,7 @@ function Home() {
                   <span>{b.optionB}</span>
                 </div>
 
-                <div className="feed-meta">
-                  {b.totalVotes} votes
-                </div>
+                <div className="feed-meta">{b.totalVotes} votes</div>
               </div>
             ))}
           </div>

@@ -36,7 +36,7 @@ function Battle() {
     const fetchBattle = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/battles/${battleId}?userId=frontend-user`
+          `http://localhost:5000/api/battles/${battleId}?userId=frontend-user`,
         );
         const data = await res.json();
 
@@ -78,7 +78,7 @@ function Battle() {
             option,
             userId: "frontend-user",
           }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -112,7 +112,7 @@ function Battle() {
             option: userVote,
             text: opinionText,
           }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -138,7 +138,7 @@ function Battle() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId: "frontend-user" }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -167,9 +167,7 @@ function Battle() {
   const totalVotes = battle.votesA + battle.votesB;
   const topOpinion =
     battle.opinions?.length > 0
-      ? [...battle.opinions].sort(
-          (a, b) => b.likes.length - a.likes.length
-        )[0]
+      ? [...battle.opinions].sort((a, b) => b.likes.length - a.likes.length)[0]
       : null;
 
   return (
@@ -181,6 +179,7 @@ function Battle() {
         optionA={battle.optionA}
         optionB={battle.optionB}
         hasVoted={hasVoted}
+        userVote={userVote}
         onVoteA={() => vote("A")}
         onVoteB={() => vote("B")}
       />
@@ -198,6 +197,12 @@ function Battle() {
           totalVotes === 0 ? 0 : Math.round((battle.votesB / totalVotes) * 100)
         }
       />
+
+      {hasVoted && battle.opinions.length === 0 && (
+        <p className="empty-state">
+          💬 No opinions yet. Be the first to share why you chose this.
+        </p>
+      )}
 
       {/* 💬 OPINIONS */}
       <OpinionSection
