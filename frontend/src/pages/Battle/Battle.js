@@ -17,14 +17,15 @@ function Battle() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ voting state
+  // 🗳️ voting state
   const [hasVoted, setHasVoted] = useState(false);
   const [userVote, setUserVote] = useState(null);
 
-  // 📝 opinion UI state (UI only for now)
+  // 💬 opinion UI state
   const [opinionText, setOpinionText] = useState("");
   const [showOpinions, setShowOpinions] = useState(false);
 
+  /* ---------------- FETCH BATTLE ---------------- */
   useEffect(() => {
     if (!battleId) {
       setError("No battle ID provided");
@@ -51,13 +52,11 @@ function Battle() {
           votesB: data.votes.B,
         });
 
-        // ✅ restore vote state on refresh
         setHasVoted(!!data.userVote);
         setUserVote(data.userVote);
-
-        setLoading(false);
       } catch (err) {
         setError("Failed to load battle");
+      } finally {
         setLoading(false);
       }
     };
@@ -65,9 +64,10 @@ function Battle() {
     fetchBattle();
   }, [battleId]);
 
-  // 🗳️ vote handler
+  /* ---------------- VOTE ---------------- */
   const vote = async (option) => {
     if (hasVoted) return;
+
     try {
       const res = await fetch(
         `http://localhost:5000/api/battles/${battle._id}/vote`,
@@ -76,7 +76,7 @@ function Battle() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             option,
-            userId: "frontend-user", // later replace with auth user
+            userId: "frontend-user",
           }),
         }
       );
@@ -84,7 +84,6 @@ function Battle() {
       const data = await res.json();
       if (!data.success) return;
 
-      // ✅ backend is source of truth
       setBattle((prev) => ({
         ...prev,
         votesA: data.votes.A,
@@ -95,6 +94,62 @@ function Battle() {
       setUserVote(option);
     } catch (err) {
       console.error("Vote failed", err);
+    }
+  };
+
+  /* ---------------- SUBMIT OPINION ---------------- */
+  const submitOpinion = async () => {
+    if (!opinionText.trim()) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/battles/${battle._id}/opinion`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: "frontend-user",
+            option: userVote,
+            text: opinionText,
+          }),
+        }
+      );
+
+      const data = await res.json();
+      if (!data.success) return;
+
+      setBattle((prev) => ({
+        ...prev,
+        opinions: data.opinions,
+      }));
+
+      setOpinionText("");
+    } catch (err) {
+      console.error("Submit opinion failed", err);
+    }
+  };
+
+  /* ---------------- LIKE OPINION ---------------- */
+  const likeOpinion = async (opinionId) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/battles/${battle._id}/opinion/${opinionId}/like`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: "frontend-user" }),
+        }
+      );
+
+      const data = await res.json();
+      if (!data.success) return;
+
+      setBattle((prev) => ({
+        ...prev,
+        opinions: data.opinions,
+      }));
+    } catch (err) {
+      console.error("Like opinion failed", err);
     }
   };
 
@@ -110,6 +165,12 @@ function Battle() {
   }
 
   const totalVotes = battle.votesA + battle.votesB;
+  const topOpinion =
+    battle.opinions?.length > 0
+      ? [...battle.opinions].sort(
+          (a, b) => b.likes.length - a.likes.length
+        )[0]
+      : null;
 
   return (
     <div className="battle-page">
@@ -143,16 +204,13 @@ function Battle() {
         hasVoted={hasVoted}
         opinionText={opinionText}
         setOpinionText={setOpinionText}
-        onSubmit={() => {
-          // backend opinion submit comes later
-          setOpinionText("");
-        }}
+        onSubmit={submitOpinion}
         opinions={battle.opinions || []}
         showOpinions={showOpinions}
         toggleOpinions={() => setShowOpinions((s) => !s)}
-        likeOpinion={() => {}}
+        likeOpinion={likeOpinion}
         userId="frontend-user"
-        topOpinion={null}
+        topOpinion={topOpinion}
       />
     </div>
   );
