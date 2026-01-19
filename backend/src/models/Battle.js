@@ -1,11 +1,8 @@
 const mongoose = require("mongoose");
 
-/**
- * Battle Schema
- * This defines the structure of a Battle document in MongoDB
- */
-const battleSchema = new mongoose.Schema(
+const BattleSchema = new mongoose.Schema(
   {
+    // 🔹 Core battle info
     title: {
       type: String,
       required: true,
@@ -13,7 +10,7 @@ const battleSchema = new mongoose.Schema(
 
     type: {
       type: String,
-      enum: ["movies", "actors", "tv", "singers", "custom"],
+      enum: ["movies", "actors", "tv", "singers"],
       required: true,
     },
 
@@ -27,24 +24,58 @@ const battleSchema = new mongoose.Schema(
       required: true,
     },
 
-    votesA: {
-      type: Number,
-      default: 0,
-    },
-
-    votesB: {
-      type: Number,
-      default: 0,
-    },
-
     createdBy: {
-      type: String, // later this will be a User ID
-      required: true,
+      type: String,
     },
+
+    // 🗳️ VOTES (one per user)
+    votes: [
+      {
+        userId: {
+          type: String,
+          required: true,
+        },
+        option: {
+          type: String,
+          enum: ["A", "B"],
+          required: true,
+        },
+      },
+    ],
+
+    // 💬 OPINIONS (one per user)
+    opinions: [
+      {
+        id: {
+          type: String,
+          required: true,
+        },
+        userId: {
+          type: String,
+          required: true,
+        },
+        option: {
+          type: String,
+          enum: ["A", "B"],
+          required: true,
+        },
+        text: {
+          type: String,
+          required: true,
+          maxlength: 200,
+        },
+        likes: {
+          type: [String], // userIds
+          default: [],
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
-  {
-    timestamps: true, // adds createdAt & updatedAt automatically
-  }
+  { timestamps: true }
 );
 
-module.exports = mongoose.model("Battle", battleSchema);
+module.exports = mongoose.model("Battle", BattleSchema);
