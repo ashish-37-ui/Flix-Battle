@@ -1,22 +1,25 @@
-function VoteSection({ optionA, optionB, hasVoted, userVote, onVoteA, onVoteB }) {
+function VoteSection({
+  optionA,
+  optionB,
+  hasVoted,
+  userVote,
+  onVoteA,
+  onVoteB,
+}) {
   return (
     <div className="vote-buttons">
       <button
-        className={`vote-btn ${
-          hasVoted && userVote === "A" ? "voted" : ""
-        }`}
         disabled={hasVoted}
-        onClick={!hasVoted ? onVoteA : undefined}
+        onClick={hasVoted ? undefined : onVoteA}
+        className={hasVoted && userVote === "A" ? "voted" : ""}
       >
         {hasVoted && userVote === "A" ? "✔ Voted" : `Vote ${optionA}`}
       </button>
 
       <button
-        className={`vote-btn ${
-          hasVoted && userVote === "B" ? "voted" : ""
-        }`}
         disabled={hasVoted}
-        onClick={!hasVoted ? onVoteB : undefined}
+        onClick={hasVoted ? undefined : onVoteB}
+        className={hasVoted && userVote === "B" ? "voted" : ""}
       >
         {hasVoted && userVote === "B" ? "✔ Voted" : `Vote ${optionB}`}
       </button>

@@ -1,9 +1,9 @@
 import "./OpinionSection.css";
 
-
 function OpinionSection({
   hasVoted,
   opinionText,
+  currentUser,
   setOpinionText,
   onSubmit,
   opinions = [],
@@ -16,7 +16,13 @@ function OpinionSection({
   return (
     <div className="opinions-wrapper">
       {/* ✍️ WRITE OPINION */}
-      {hasVoted && (
+      {/* 🔒 Not logged in */}
+      {hasVoted && !currentUser && (
+        <p className="empty-state">🔒 Login to share your opinion.</p>
+      )}
+
+      {/* ✍️ Write opinion (only when logged in + voted) */}
+      {hasVoted && currentUser && (
         <div className="opinion-card write-card">
           <h3 className="opinion-title">💬 Why did you choose this?</h3>
 
@@ -38,9 +44,7 @@ function OpinionSection({
               Post Opinion
             </button>
 
-            <span className="char-hint">
-              {opinionText.length}/200
-            </span>
+            <span className="char-hint">{opinionText.length}/200</span>
           </div>
         </div>
       )}
@@ -48,13 +52,9 @@ function OpinionSection({
       {/* 🔥 TOP OPINION */}
       {topOpinion && (topOpinion.likes || []).length > 0 && (
         <div className="opinion-card top-opinion">
-          <div className="top-opinion-header">
-            🔥 Top Opinion
-          </div>
+          <div className="top-opinion-header">🔥 Top Opinion</div>
 
-          <p className="opinion-text">
-            {topOpinion.text}
-          </p>
+          <p className="opinion-text">{topOpinion.text}</p>
 
           <div className="opinion-meta">
             👍 {(topOpinion.likes || []).length} likes
@@ -76,25 +76,17 @@ function OpinionSection({
       {/* 💬 COMMUNITY OPINIONS */}
       {showOpinions && (
         <div className="opinions-panel">
-          <div className="opinions-header">
-            💬 Community Opinions
-          </div>
+          <div className="opinions-header">💬 Community Opinions</div>
 
           <div className="opinions-list">
             {opinions.map((op) => (
               <div key={op.id} className="opinion-item">
-                <div className="opinion-badge">
-                  Picked {op.option}
-                </div>
+                <div className="opinion-badge">Picked {op.option}</div>
 
-                <p className="opinion-text">
-                  {op.text}
-                </p>
+                <p className="opinion-text">{op.text}</p>
 
                 <div className="opinion-meta">
-                  <span>
-                    👍 {(op.likes || []).length}
-                  </span>
+                  <span>👍 {(op.likes || []).length}</span>
 
                   {op.userId !== userId &&
                     !(op.likes || []).includes(userId) && (

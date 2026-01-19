@@ -7,7 +7,7 @@ export function getCurrentUser() {
 export function loginUser(username) {
   const user = {
     username,
-    id: `user_${Date.now()}`,
+    id: `user_${username.toLowerCase()}`,
   };
 
   localStorage.setItem(USER_KEY, JSON.stringify(user));

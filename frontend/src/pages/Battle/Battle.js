@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { getCurrentUser } from "../../utils/auth";
+import { useLocation } from "react-router-dom";
 
 import "./Battle.css";
 import BattleHeader from "./BattleHeader";
@@ -12,6 +14,9 @@ function Battle() {
   const navigate = useNavigate();
 
   const battleId = searchParams.get("battleId");
+  const currentUser = getCurrentUser();
+  const userId = currentUser?.id || null;
+  const location = useLocation();
 
   const [battle, setBattle] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -36,7 +41,7 @@ function Battle() {
     const fetchBattle = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/battles/${battleId}?userId=frontend-user`,
+          `http://localhost:5000/api/battles/${battleId}?userId=${userId}`,
         );
         const data = await res.json();
 
@@ -62,10 +67,17 @@ function Battle() {
     };
 
     fetchBattle();
-  }, [battleId]);
+  }, [battleId, userId]);
 
   /* ---------------- VOTE ---------------- */
   const vote = async (option) => {
+    if (!currentUser) {
+      navigate("/login", {
+        state: { from: location.pathname + location.search },
+      });
+
+      return;
+    }
     if (hasVoted) return;
 
     try {
@@ -76,7 +88,7 @@ function Battle() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             option,
-            userId: "frontend-user",
+            userId: currentUser.id,
           }),
         },
       );
@@ -108,7 +120,7 @@ function Battle() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            userId: "frontend-user",
+            userId: currentUser.id,
             option: userVote,
             text: opinionText,
           }),
@@ -131,13 +143,24 @@ function Battle() {
 
   /* ---------------- LIKE OPINION ---------------- */
   const likeOpinion = async (opinionId) => {
+    if (!currentUser) {
+      navigate("/login", {
+        state: { from: location.pathname + location.search },
+      });
+
+      return;
+    }
+
+    if (hasVoted) {
+    return;
+  }
     try {
       const res = await fetch(
         `http://localhost:5000/api/battles/${battle._id}/opinion/${opinionId}/like`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: "frontend-user" }),
+          body: JSON.stringify({ userId: currentUser.id }),
         },
       );
 
@@ -207,6 +230,7 @@ function Battle() {
       {/* 💬 OPINIONS */}
       <OpinionSection
         hasVoted={hasVoted}
+         currentUser={currentUser}
         opinionText={opinionText}
         setOpinionText={setOpinionText}
         onSubmit={submitOpinion}
@@ -214,7 +238,7 @@ function Battle() {
         showOpinions={showOpinions}
         toggleOpinions={() => setShowOpinions((s) => !s)}
         likeOpinion={likeOpinion}
-        userId="frontend-user"
+        userId={userId}
         topOpinion={topOpinion}
       />
     </div>

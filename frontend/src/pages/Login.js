@@ -1,19 +1,26 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../utils/auth";
+import { useLocation } from "react-router-dom";
+
 import "./Auth.css";
 
 
 function Login({ setCurrentUser }) {
   const [username, setUsername] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+const redirectTo = location.state?.from || "/";
+
 
   const handleLogin = () => {
   if (!username.trim()) return;
 
   const user = loginUser(username); // ✅ capture returned user
   setCurrentUser(user);             // ✅ now user is defined
-  navigate("/");
+  navigate(redirectTo);
+
 };
 
 
