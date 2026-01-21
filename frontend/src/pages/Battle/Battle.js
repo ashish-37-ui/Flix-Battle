@@ -78,7 +78,11 @@ function Battle() {
 
       return;
     }
-    if (hasVoted) return;
+    if (hasVoted) {
+  alert("You have already voted on this battle.");
+  return;
+}
+
 
     try {
       const res = await fetch(
@@ -104,6 +108,8 @@ function Battle() {
 
       setHasVoted(true);
       setUserVote(option);
+      alert("Your vote has been recorded.");
+
     } catch (err) {
       console.error("Vote failed", err);
     }
@@ -136,6 +142,7 @@ function Battle() {
       }));
 
       setOpinionText("");
+      alert("Your opinion has been posted.");
     } catch (err) {
       console.error("Submit opinion failed", err);
     }
@@ -165,7 +172,10 @@ function Battle() {
       );
 
       const data = await res.json();
-      if (!data.success) return;
+      if (!data.success) {
+  alert(data.message || "Failed to submit opinion");
+  return;
+}
 
       setBattle((prev) => ({
         ...prev,
