@@ -16,9 +16,10 @@ function Home() {
 
   const [battles, setBattles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  
 const [searchResults, setSearchResults] = useState([]);
 const [searching, setSearching] = useState(false);
+const [query, setQuery] = useState("");
 
 
   useEffect(() => {
@@ -48,10 +49,10 @@ const [searching, setSearching] = useState(false);
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5);
 
-    const handleSearch = async (e) => {
+  const handleSearch = async (e) => {
   e.preventDefault();
 
-  if (!searchQuery.trim()) {
+  if (!query.trim()) {
     setSearchResults([]);
     return;
   }
@@ -59,7 +60,7 @@ const [searching, setSearching] = useState(false);
   try {
     setSearching(true);
     const res = await fetch(
-      `http://localhost:5000/api/battles?q=${encodeURIComponent(searchQuery)}`
+      `http://localhost:5000/api/battles?q=${encodeURIComponent(query)}`
     );
     const data = await res.json();
 
@@ -78,6 +79,7 @@ const [searching, setSearching] = useState(false);
     setSearching(false);
   }
 };
+
 
 
   return (
@@ -106,16 +108,33 @@ const [searching, setSearching] = useState(false);
         </button>
       </section>
 
-      <section className="search-section">
+     <section className="search-section">
   <form onSubmit={handleSearch} className="search-bar">
-    <input
-      placeholder="Search battles (movies, actors, shows...)"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-    />
+    <div className="search-input-wrapper">
+      <input
+        placeholder="Search battles (movies, actors, shows...)"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+
+      {query && (
+        <button
+          type="button"
+          className="clear-search"
+          onClick={() => {
+            setQuery("");
+            setSearchResults([]);
+          }}
+        >
+          ✕
+        </button>
+      )}
+    </div>
+
     <button type="submit">Search</button>
   </form>
 </section>
+
 
 
       {/* 🎯 CATEGORIES (MOVED UP) */}
@@ -175,7 +194,7 @@ const [searching, setSearching] = useState(false);
         </button>
       </section>
 
-      {searchQuery && (
+  {query && (
   <section className="search-results" ref={searchRef}>
     <h2>🔍 Search Results</h2>
 
@@ -193,12 +212,16 @@ const [searching, setSearching] = useState(false);
               navigate(`/battle?battleId=${b._id}`)
             }
           >
-            <div className="feed-title">{b.title}</div>
-            <div className="feed-options">
-              <span>{b.optionA}</span>
-              <strong>VS</strong>
-              <span>{b.optionB}</span>
+            <div className="feed-title">
+              {highlightMatch(b.title, query)}
             </div>
+
+            <div className="feed-options">
+              <span>{highlightMatch(b.optionA, query)}</span>
+              <strong>VS</strong>
+              <span>{highlightMatch(b.optionB, query)}</span>
+            </div>
+
             <div className="feed-meta">
               {b.totalVotes} votes
             </div>
@@ -208,6 +231,7 @@ const [searching, setSearching] = useState(false);
     )}
   </section>
 )}
+
 
 
       {/* 🔥 POPULAR */}
@@ -283,5 +307,23 @@ const [searching, setSearching] = useState(false);
     </>
   );
 }
+
+function highlightMatch(text, query) {
+  if (!query) return text;
+
+  const regex = new RegExp(`(${query})`, "ig");
+  const parts = text.split(regex);
+
+  return parts.map((part, index) =>
+    part.toLowerCase() === query.toLowerCase() ? (
+      <span key={index} className="highlight">
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
+}
+
 
 export default Home;
