@@ -42,6 +42,8 @@ function CategoryBattles() {
     fetchCategoryBattles();
   }, [type]);
 
+  
+
   return (
     <div className="category-page">
       {/* 🔹 HEADER */}

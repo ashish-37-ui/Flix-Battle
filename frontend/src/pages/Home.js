@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../utils/auth";
+//import Skeleton from "../components/Skeleton";
+
 
 import "./Home.css";
 
@@ -103,6 +105,24 @@ function Home() {
         </div>
       </section>
 
+       <section className="create-battle">
+        <h2>Create Your Own Battle</h2>
+        <p>Pick any two things and let people decide.</p>
+
+        <button
+          className="primary-btn"
+          onClick={() => {
+            if (!currentUser) {
+              navigate("/login");
+            } else {
+              navigate("/create");
+            }
+          }}
+        >
+          Create a Battle ✨
+        </button>
+      </section>
+
       {/* 🔥 POPULAR */}
       <section className="popular-battles">
         <h2>🔥 Popular Battles</h2>
@@ -172,23 +192,7 @@ function Home() {
       </section>
 
       {/* ✨ CREATE */}
-      <section className="create-battle">
-        <h2>Create Your Own Battle</h2>
-        <p>Pick any two things and let people decide.</p>
-
-        <button
-          className="primary-btn"
-          onClick={() => {
-            if (!currentUser) {
-              navigate("/login");
-            } else {
-              navigate("/create");
-            }
-          }}
-        >
-          Create a Battle ✨
-        </button>
-      </section>
+     
     </>
   );
 }

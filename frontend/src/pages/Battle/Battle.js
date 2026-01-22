@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../../utils/auth";
 import { useLocation } from "react-router-dom";
+import Skeleton from "../../components/Skeleton";
+
 
 import "./Battle.css";
 import BattleHeader from "./BattleHeader";
@@ -69,51 +71,62 @@ function Battle() {
     fetchBattle();
   }, [battleId, userId]);
 
+  console.log("Current user:", getCurrentUser());
+
   /* ---------------- VOTE ---------------- */
   const vote = async (option) => {
-    if (!currentUser) {
-      navigate("/login", {
-        state: { from: location.pathname + location.search },
-      });
+  // 🔒 Not logged in
+  if (!currentUser) {
+    alert("Please log in to vote on this battle.");
 
-      return;
-    }
-    if (hasVoted) {
-  alert("You have already voted on this battle.");
-  return;
+    navigate("/login", {
+      state: { from: location.pathname + location.search },
+    });
+    return;
+  }
+
+  // 🔒 Already voted — HARD STOP
+  if (hasVoted) {
+  return; // silent no-op (UX-friendly)
 }
 
+  // 🗳️ Proceed with vote
+  try {
+    const res = await fetch(
+      `http://localhost:5000/api/battles/${battle._id}/vote`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          option,
+          userId: currentUser.id,
+        }),
+      }
+    );
 
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/battles/${battle._id}/vote`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            option,
-            userId: currentUser.id,
-          }),
-        },
-      );
+    const data = await res.json();
 
-      const data = await res.json();
-      if (!data.success) return;
-
-      setBattle((prev) => ({
-        ...prev,
-        votesA: data.votes.A,
-        votesB: data.votes.B,
-      }));
-
-      setHasVoted(true);
-      setUserVote(option);
-      alert("Your vote has been recorded.");
-
-    } catch (err) {
-      console.error("Vote failed", err);
+    if (!res.ok || !data.success) {
+      alert(data.message || "Vote failed");
+      return;
     }
-  };
+
+    setBattle((prev) => ({
+      ...prev,
+      votesA: data.votes.A,
+      votesB: data.votes.B,
+    }));
+
+    setHasVoted(true);
+    setUserVote(option);
+
+    alert("Your vote has been recorded.");
+  } catch (err) {
+    console.error("Vote failed", err);
+    alert("Something went wrong while voting.");
+  }
+};
+
 
   /* ---------------- SUBMIT OPINION ---------------- */
   const submitOpinion = async () => {
@@ -186,7 +199,21 @@ function Battle() {
     }
   };
 
-  if (loading) return <p className="loading">Loading battle…</p>;
+  if (loading) {
+  return (
+    <div className="battle-page">
+      <Skeleton height={32} width="70%" style={{ marginBottom: 20 }} />
+
+      <Skeleton height={48} style={{ marginBottom: 12 }} />
+      <Skeleton height={48} style={{ marginBottom: 24 }} />
+
+      <Skeleton height={20} width="40%" style={{ marginBottom: 8 }} />
+      <Skeleton height={12} />
+      <Skeleton height={12} />
+    </div>
+  );
+}
+
 
   if (error) {
     return (

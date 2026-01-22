@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import battleDataMap from "../data/battleData"; // ADD THIS AT TOP
+//import battleDataMap from "../data/battleData"; // ADD THIS AT TOP
 
 import "./CreateBattle.css";
 
