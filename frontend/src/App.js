@@ -10,6 +10,8 @@ import Navbar from "./components/Navbar";
 import CreateBattle from "./pages/CreateBattle";
 import Login from "./pages/Login";
 import CategoryBattles from "./pages/CategoryBattles";
+import Profile from "./pages/Profile";
+
 
 function App() {
   const [currentUser, setCurrentUser] = useState(getCurrentUser());
@@ -30,6 +32,8 @@ function App() {
         <Route path="/trends" element={<Trends />} />
         <Route path="/create" element={<CreateBattle />} />
         <Route path="/category/:type" element={<CategoryBattles />} />
+        <Route path="/profile" element={<Profile />} />
+
 
         <Route
           path="/login"

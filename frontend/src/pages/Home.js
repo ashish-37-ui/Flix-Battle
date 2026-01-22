@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../utils/auth";
+import { useRef } from "react";
+
 //import Skeleton from "../components/Skeleton";
 
 
@@ -9,9 +11,15 @@ import "./Home.css";
 function Home() {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
+  const searchRef = useRef(null);
+
 
   const [battles, setBattles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+const [searchResults, setSearchResults] = useState([]);
+const [searching, setSearching] = useState(false);
+
 
   useEffect(() => {
     const fetchBattles = async () => {
@@ -40,6 +48,38 @@ function Home() {
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5);
 
+    const handleSearch = async (e) => {
+  e.preventDefault();
+
+  if (!searchQuery.trim()) {
+    setSearchResults([]);
+    return;
+  }
+
+  try {
+    setSearching(true);
+    const res = await fetch(
+      `http://localhost:5000/api/battles?q=${encodeURIComponent(searchQuery)}`
+    );
+    const data = await res.json();
+
+    if (data.success) {
+      setSearchResults(data.battles);
+      setTimeout(() => {
+        searchRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    }
+  } catch (err) {
+    console.error("Search failed");
+  } finally {
+    setSearching(false);
+  }
+};
+
+
   return (
     <>
       {/* 🔥 HERO */}
@@ -65,6 +105,18 @@ function Home() {
           Choose a Battle Type ↓
         </button>
       </section>
+
+      <section className="search-section">
+  <form onSubmit={handleSearch} className="search-bar">
+    <input
+      placeholder="Search battles (movies, actors, shows...)"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+    />
+    <button type="submit">Search</button>
+  </form>
+</section>
+
 
       {/* 🎯 CATEGORIES (MOVED UP) */}
       <section id="battle-categories" className="battle-type-section">
@@ -122,6 +174,41 @@ function Home() {
           Create a Battle ✨
         </button>
       </section>
+
+      {searchQuery && (
+  <section className="search-results" ref={searchRef}>
+    <h2>🔍 Search Results</h2>
+
+    {searching ? (
+      <p className="empty-state">Searching…</p>
+    ) : searchResults.length === 0 ? (
+      <p className="empty-state">No battles found.</p>
+    ) : (
+      <div className="battle-feed search-feed">
+        {searchResults.map((b) => (
+          <div
+            key={b._id}
+            className="battle-feed-card"
+            onClick={() =>
+              navigate(`/battle?battleId=${b._id}`)
+            }
+          >
+            <div className="feed-title">{b.title}</div>
+            <div className="feed-options">
+              <span>{b.optionA}</span>
+              <strong>VS</strong>
+              <span>{b.optionB}</span>
+            </div>
+            <div className="feed-meta">
+              {b.totalVotes} votes
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+)}
+
 
       {/* 🔥 POPULAR */}
       <section className="popular-battles">

@@ -1,0 +1,36 @@
+.profile-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.profile-header {
+  margin-bottom: 40px;
+}
+
+.profile-header h1 {
+  font-size: 28px;
+}
+
+.profile-header p {
+  color: #9ca3af;
+}
+
+.profile-section {
+  margin-bottom: 50px;
+}
+
+.profile-section h2 {
+  margin-bottom: 16px;
+}
+
+.empty-state {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.battle-feed {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
