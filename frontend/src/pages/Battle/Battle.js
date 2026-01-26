@@ -257,6 +257,34 @@ function Battle() {
         </button>
       </div>
 
+      <div className="share-actions">
+        <button
+          className="share-btn whatsapp"
+          onClick={() =>
+            window.open(
+              `https://wa.me/?text=${encodeURIComponent(window.location.href)}`,
+              "_blank",
+            )
+          }
+        >
+          WhatsApp
+        </button>
+
+        <button
+          className="share-btn twitter"
+          onClick={() =>
+            window.open(
+              `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+                window.location.href,
+              )}`,
+              "_blank",
+            )
+          }
+        >
+          X
+        </button>
+      </div>
+
       {/* 🗳️ VOTE */}
       <VoteSection
         optionA={battle.optionA}

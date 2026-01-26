@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getCurrentUser } from "../utils/auth";
 //import battleDataMap from "../data/battleData"; // ADD THIS AT TOP
 
 import "./CreateBattle.css";
 
 function CreateBattle() {
   const navigate = useNavigate();
+  const currentUser = getCurrentUser();
 
   const [type, setType] = useState("movies");
   const [optionA, setOptionA] = useState("");
@@ -25,7 +27,7 @@ function CreateBattle() {
         type,
         optionA,
         optionB,
-        createdBy: "frontend-user", // later replace with auth user
+        createdBy: currentUser.id, // later replace with auth user
       }),
     });
 

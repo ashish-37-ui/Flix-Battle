@@ -424,6 +424,35 @@ button:disabled {
   color: #22c55e;
 }
 
+.share-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.share-btn {
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+}
+
+.share-btn.whatsapp {
+  background: #22c55e;
+}
+
+.share-btn.twitter {
+  background: #1d9bf0;
+}
+
+.share-btn:hover {
+  opacity: 0.9;
+}
+
+
 
 @keyframes fadeInUp {
   from {
