@@ -4,7 +4,6 @@ import { getCurrentUser } from "../../utils/auth";
 import { useLocation } from "react-router-dom";
 import Skeleton from "../../components/Skeleton";
 
-
 import "./Battle.css";
 import BattleHeader from "./BattleHeader";
 import VoteSection from "./VoteSection";
@@ -75,58 +74,57 @@ function Battle() {
 
   /* ---------------- VOTE ---------------- */
   const vote = async (option) => {
-  // 🔒 Not logged in
-  if (!currentUser) {
-    alert("Please log in to vote on this battle.");
+    // 🔒 Not logged in
+    if (!currentUser) {
+      alert("Please log in to vote on this battle.");
 
-    navigate("/login", {
-      state: { from: location.pathname + location.search },
-    });
-    return;
-  }
-
-  // 🔒 Already voted — HARD STOP
-  if (hasVoted) {
-  return; // silent no-op (UX-friendly)
-}
-
-  // 🗳️ Proceed with vote
-  try {
-    const res = await fetch(
-      `http://localhost:5000/api/battles/${battle._id}/vote`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          option,
-          userId: currentUser.id,
-        }),
-      }
-    );
-
-    const data = await res.json();
-
-    if (!res.ok || !data.success) {
-      alert(data.message || "Vote failed");
+      navigate("/login", {
+        state: { from: location.pathname + location.search },
+      });
       return;
     }
 
-    setBattle((prev) => ({
-      ...prev,
-      votesA: data.votes.A,
-      votesB: data.votes.B,
-    }));
+    // 🔒 Already voted — HARD STOP
+    if (hasVoted) {
+      return; // silent no-op (UX-friendly)
+    }
 
-    setHasVoted(true);
-    setUserVote(option);
+    // 🗳️ Proceed with vote
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/battles/${battle._id}/vote`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            option,
+            userId: currentUser.id,
+          }),
+        },
+      );
 
-    alert("Your vote has been recorded.");
-  } catch (err) {
-    console.error("Vote failed", err);
-    alert("Something went wrong while voting.");
-  }
-};
+      const data = await res.json();
 
+      if (!res.ok || !data.success) {
+        alert(data.message || "Vote failed");
+        return;
+      }
+
+      setBattle((prev) => ({
+        ...prev,
+        votesA: data.votes.A,
+        votesB: data.votes.B,
+      }));
+
+      setHasVoted(true);
+      setUserVote(option);
+
+      alert("Your vote has been recorded.");
+    } catch (err) {
+      console.error("Vote failed", err);
+      alert("Something went wrong while voting.");
+    }
+  };
 
   /* ---------------- SUBMIT OPINION ---------------- */
   const submitOpinion = async () => {
@@ -172,8 +170,8 @@ function Battle() {
     }
 
     if (hasVoted) {
-    return;
-  }
+      return;
+    }
     try {
       const res = await fetch(
         `http://localhost:5000/api/battles/${battle._id}/opinion/${opinionId}/like`,
@@ -186,9 +184,9 @@ function Battle() {
 
       const data = await res.json();
       if (!data.success) {
-  alert(data.message || "Failed to submit opinion");
-  return;
-}
+        alert(data.message || "Failed to submit opinion");
+        return;
+      }
 
       setBattle((prev) => ({
         ...prev,
@@ -199,21 +197,31 @@ function Battle() {
     }
   };
 
+  const shareBattle = async () => {
+    const url = window.location.href;
+
+    try {
+      await navigator.clipboard.writeText(url);
+      alert("🔗 Battle link copied!");
+    } catch (err) {
+      alert("Failed to copy link");
+    }
+  };
+
   if (loading) {
-  return (
-    <div className="battle-page">
-      <Skeleton height={32} width="70%" style={{ marginBottom: 20 }} />
+    return (
+      <div className="battle-page">
+        <Skeleton height={32} width="70%" style={{ marginBottom: 20 }} />
 
-      <Skeleton height={48} style={{ marginBottom: 12 }} />
-      <Skeleton height={48} style={{ marginBottom: 24 }} />
+        <Skeleton height={48} style={{ marginBottom: 12 }} />
+        <Skeleton height={48} style={{ marginBottom: 24 }} />
 
-      <Skeleton height={20} width="40%" style={{ marginBottom: 8 }} />
-      <Skeleton height={12} />
-      <Skeleton height={12} />
-    </div>
-  );
-}
-
+        <Skeleton height={20} width="40%" style={{ marginBottom: 8 }} />
+        <Skeleton height={12} />
+        <Skeleton height={12} />
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -233,6 +241,12 @@ function Battle() {
   return (
     <div className="battle-page">
       <BattleHeader title={battle.title} />
+
+      <div className="battle-actions">
+        <button className="secondary-btn" onClick={shareBattle}>
+          🔗 Share Battle
+        </button>
+      </div>
 
       {/* 🗳️ VOTE */}
       <VoteSection
@@ -267,7 +281,7 @@ function Battle() {
       {/* 💬 OPINIONS */}
       <OpinionSection
         hasVoted={hasVoted}
-         currentUser={currentUser}
+        currentUser={currentUser}
         opinionText={opinionText}
         setOpinionText={setOpinionText}
         onSubmit={submitOpinion}

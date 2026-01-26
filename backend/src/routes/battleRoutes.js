@@ -7,13 +7,30 @@ const Battle = require("../models/Battle");
  * GET /api/battles
  * Fetch all battles (for Home & Trends)
  */
+/**
+ * GET /api/battles
+ * Supports:
+ *  - category filter (?type=movies)
+ *  - search (?q=interstellar)
+ */
 router.get("/", async (req, res) => {
   try {
+    const { type, q } = req.query;
 
-      const { type } = req.query;
+    const filter = {};
 
-    // 🔹 Build filter dynamically
-    const filter = type ? { type } : {};
+    if (type) {
+      filter.type = type;
+    }
+
+    if (q) {
+      filter.$or = [
+        { title: { $regex: q, $options: "i" } },
+        { optionA: { $regex: q, $options: "i" } },
+        { optionB: { $regex: q, $options: "i" } },
+      ];
+    }
+
     const battles = await Battle.find(filter).sort({ createdAt: -1 });
 
     const formattedBattles = battles.map((battle) => {
@@ -70,13 +87,13 @@ router.get("/:id", async (req, res) => {
     }
 
     // 🔹 Derive votes from votes array
-    const votesA = battle.votes.filter(v => v.option === "A").length;
-    const votesB = battle.votes.filter(v => v.option === "B").length;
+    const votesA = battle.votes.filter((v) => v.option === "A").length;
+    const votesB = battle.votes.filter((v) => v.option === "B").length;
 
     // 🔹 Find user's vote (if logged in)
     let userVote = null;
     if (userId) {
-      const found = battle.votes.find(v => v.userId === userId);
+      const found = battle.votes.find((v) => v.userId === userId);
       if (found) userVote = found.option;
     }
 
@@ -96,7 +113,6 @@ router.get("/:id", async (req, res) => {
     });
   }
 });
-
 
 /**
  * POST /api/battles
@@ -169,23 +185,23 @@ router.post("/:id/vote", async (req, res) => {
     }
 
     // Check if user already voted
-    const existingVote = battle.votes.find(
-      (vote) => vote.userId === userId
-    );
+    const existingVote = battle.votes.find((vote) => vote.userId === userId);
 
     if (existingVote) {
-      // Update vote (allowed)
-      existingVote.option = option;
-    } else {
-      // New vote
-      battle.votes.push({ userId, option });
+      return res.status(400).json({
+        success: false,
+        message: "You have already voted on this battle",
+      });
     }
+
+    // New vote only
+    battle.votes.push({ userId, option });
 
     await battle.save();
 
     // Derive counts (single source of truth)
-    const votesA = battle.votes.filter(v => v.option === "A").length;
-    const votesB = battle.votes.filter(v => v.option === "B").length;
+    const votesA = battle.votes.filter((v) => v.option === "A").length;
+    const votesB = battle.votes.filter((v) => v.option === "B").length;
 
     res.json({
       success: true,
@@ -225,9 +241,7 @@ router.post("/:id/opinion", async (req, res) => {
       });
     }
 
-    const alreadyPosted = battle.opinions.find(
-      (op) => op.userId === userId
-    );
+    const alreadyPosted = battle.opinions.find((op) => op.userId === userId);
 
     if (alreadyPosted) {
       return res.status(400).json({
@@ -271,7 +285,7 @@ router.post("/:id/opinion/:opinionId/like", async (req, res) => {
     }
 
     const opinion = battle.opinions.find(
-      (op) => op.id === req.params.opinionId
+      (op) => op.id === req.params.opinionId,
     );
 
     if (!opinion || opinion.likes.includes(userId)) {
@@ -289,7 +303,5 @@ router.post("/:id/opinion/:opinionId/like", async (req, res) => {
     res.status(500).json({ success: false });
   }
 });
-
-
 
 module.exports = router;

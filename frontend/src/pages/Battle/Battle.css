@@ -359,6 +359,26 @@ button:disabled {
   animation: fadeInUp 0.4s ease forwards;
 }
 
+.battle-actions {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0 20px;
+}
+
+.secondary-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e5e7eb;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
