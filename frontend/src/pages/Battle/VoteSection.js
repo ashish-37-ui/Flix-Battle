@@ -10,6 +10,7 @@ function VoteSection({
     <div className="vote-buttons">
       <button
         disabled={hasVoted}
+        title={hasVoted ? "You have already voted on this battle" : ""}
         onClick={hasVoted ? undefined : onVoteA}
         className={hasVoted && userVote === "A" ? "voted" : ""}
       >
@@ -18,6 +19,7 @@ function VoteSection({
 
       <button
         disabled={hasVoted}
+        title={hasVoted ? "You have already voted on this battle" : ""}
         onClick={hasVoted ? undefined : onVoteB}
         className={hasVoted && userVote === "B" ? "voted" : ""}
       >

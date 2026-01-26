@@ -378,6 +378,52 @@ button:disabled {
   background: rgba(255, 255, 255, 0.15);
 }
 
+.feedback {
+  text-align: center;
+  margin: 10px auto 18px;
+  padding: 8px 14px;
+  width: fit-content;
+  border-radius: 6px;
+  font-size: 14px;
+  animation: fadeIn 0.2s ease;
+}
+
+.feedback.success {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.feedback.warning {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+}
+
+.feedback.info {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vote-buttons button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.vote-buttons button.voted {
+  border: 1px solid #22c55e;
+  color: #22c55e;
+}
+
 
 @keyframes fadeInUp {
   from {

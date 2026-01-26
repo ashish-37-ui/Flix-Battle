@@ -30,6 +30,7 @@ function Battle() {
   // 💬 opinion UI state
   const [opinionText, setOpinionText] = useState("");
   const [showOpinions, setShowOpinions] = useState(false);
+  const [feedback, setFeedback] = useState(null);
 
   /* ---------------- FETCH BATTLE ---------------- */
   useEffect(() => {
@@ -74,22 +75,18 @@ function Battle() {
 
   /* ---------------- VOTE ---------------- */
   const vote = async (option) => {
-    // 🔒 Not logged in
     if (!currentUser) {
-      alert("Please log in to vote on this battle.");
-
       navigate("/login", {
         state: { from: location.pathname + location.search },
       });
       return;
     }
 
-    // 🔒 Already voted — HARD STOP
     if (hasVoted) {
-      return; // silent no-op (UX-friendly)
+      showFeedback("⚠️ You already voted on this battle", "warning");
+      return;
     }
 
-    // 🗳️ Proceed with vote
     try {
       const res = await fetch(
         `http://localhost:5000/api/battles/${battle._id}/vote`,
@@ -104,9 +101,8 @@ function Battle() {
       );
 
       const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        alert(data.message || "Vote failed");
+      if (!data.success) {
+        showFeedback(data.message || "Vote failed", "warning");
         return;
       }
 
@@ -119,10 +115,9 @@ function Battle() {
       setHasVoted(true);
       setUserVote(option);
 
-      alert("Your vote has been recorded.");
-    } catch (err) {
-      console.error("Vote failed", err);
-      alert("Something went wrong while voting.");
+      showFeedback("✅ Vote recorded", "success");
+    } catch {
+      showFeedback("Something went wrong", "warning");
     }
   };
 
@@ -145,17 +140,24 @@ function Battle() {
       );
 
       const data = await res.json();
-      if (!data.success) return;
 
+      // ❌ Backend rejected opinion (already posted, etc.)
+      if (!data.success) {
+        showFeedback(data.message || "Opinion already submitted", "warning");
+        return;
+      }
+
+      // ✅ Opinion accepted
       setBattle((prev) => ({
         ...prev,
         opinions: data.opinions,
       }));
 
       setOpinionText("");
-      alert("Your opinion has been posted.");
+
+      showFeedback("💬 Opinion posted", "success");
     } catch (err) {
-      console.error("Submit opinion failed", err);
+      showFeedback("Failed to submit opinion", "warning");
     }
   };
 
@@ -198,14 +200,17 @@ function Battle() {
   };
 
   const shareBattle = async () => {
-    const url = window.location.href;
-
     try {
-      await navigator.clipboard.writeText(url);
-      alert("🔗 Battle link copied!");
-    } catch (err) {
-      alert("Failed to copy link");
+      await navigator.clipboard.writeText(window.location.href);
+      showFeedback("🔗 Battle link copied", "success");
+    } catch {
+      showFeedback("Failed to copy link", "warning");
     }
+  };
+
+  const showFeedback = (message, type = "info") => {
+    setFeedback({ message, type });
+    setTimeout(() => setFeedback(null), 2500);
   };
 
   if (loading) {
@@ -242,6 +247,10 @@ function Battle() {
     <div className="battle-page">
       <BattleHeader title={battle.title} />
 
+      {feedback && (
+        <div className={`feedback ${feedback.type}`}>{feedback.message}</div>
+      )}
+
       <div className="battle-actions">
         <button className="secondary-btn" onClick={shareBattle}>
           🔗 Share Battle
@@ -277,6 +286,13 @@ function Battle() {
           💬 No opinions yet. Be the first to share why you chose this.
         </p>
       )}
+
+      {hasVoted &&
+        battle.opinions.some((op) => op.userId === currentUser?.id) && (
+          <p className="empty-state">
+            ✅ You’ve already shared your opinion on this battle.
+          </p>
+        )}
 
       {/* 💬 OPINIONS */}
       <OpinionSection
