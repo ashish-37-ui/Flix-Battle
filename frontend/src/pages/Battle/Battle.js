@@ -4,11 +4,15 @@ import { getCurrentUser } from "../../utils/auth";
 import { useLocation } from "react-router-dom";
 import Skeleton from "../../components/Skeleton";
 
+
+
 import "./Battle.css";
 import BattleHeader from "./BattleHeader";
 import VoteSection from "./VoteSection";
 import ResultsSection from "./ResultsSection";
 import OpinionSection from "./OpinionSection";
+
+
 
 function Battle() {
   const [searchParams] = useSearchParams();
@@ -102,7 +106,7 @@ function Battle() {
 
       const data = await res.json();
       if (!data.success) {
-        showFeedback(data.message || "Vote failed", "warning");
+        showFeedback(data.message || "You already voted", "warning");
         return;
       }
 
@@ -208,9 +212,9 @@ function Battle() {
     }
   };
 
-  const showFeedback = (message, type = "info") => {
+  const showFeedback = (message, type = "success") => {
     setFeedback({ message, type });
-    setTimeout(() => setFeedback(null), 2500);
+    setTimeout(() => setFeedback(null), 3000);
   };
 
   if (loading) {
@@ -233,7 +237,13 @@ function Battle() {
       <div className="battle-page not-found">
         <h1>😕 Battle not found</h1>
         <p>This battle link is invalid or expired.</p>
-        <button onClick={() => navigate("/")}>Go Home</button>
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          className="primary-btn"
+        >
+          Go Home
+        </button>
       </div>
     );
   }
@@ -246,6 +256,9 @@ function Battle() {
 
   return (
     <div className="battle-page">
+      {feedback && (
+        <div className={`feedback ${feedback.type}`}>{feedback.message}</div>
+      )}
       <BattleHeader title={battle.title} />
 
       {feedback && (
