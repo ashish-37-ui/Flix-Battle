@@ -228,10 +228,11 @@ function Battle() {
     );
   }
 
-  if (error) {
+  if (!battleId) {
     return (
       <div className="battle-page not-found">
-        <h1>😕 {error}</h1>
+        <h1>😕 Battle not found</h1>
+        <p>This battle link is invalid or expired.</p>
         <button onClick={() => navigate("/")}>Go Home</button>
       </div>
     );
