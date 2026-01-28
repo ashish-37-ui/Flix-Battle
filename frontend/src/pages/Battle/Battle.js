@@ -4,15 +4,11 @@ import { getCurrentUser } from "../../utils/auth";
 import { useLocation } from "react-router-dom";
 import Skeleton from "../../components/Skeleton";
 
-
-
 import "./Battle.css";
 import BattleHeader from "./BattleHeader";
 import VoteSection from "./VoteSection";
 import ResultsSection from "./ResultsSection";
 import OpinionSection from "./OpinionSection";
-
-
 
 function Battle() {
   const [searchParams] = useSearchParams();
@@ -166,42 +162,41 @@ function Battle() {
   };
 
   /* ---------------- LIKE OPINION ---------------- */
-  const likeOpinion = async (opinionId) => {
-    if (!currentUser) {
-      navigate("/login", {
-        state: { from: location.pathname + location.search },
-      });
+ const likeOpinion = async (opinionId) => {
+  if (!currentUser) {
+    navigate("/login", {
+      state: { from: location.pathname + location.search },
+    });
+    return;
+  }
 
-      return;
-    }
-
-    if (hasVoted) {
-      return;
-    }
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/battles/${battle._id}/opinion/${opinionId}/like`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: currentUser.id }),
-        },
-      );
-
-      const data = await res.json();
-      if (!data.success) {
-        alert(data.message || "Failed to submit opinion");
-        return;
+  try {
+    const res = await fetch(
+      `http://localhost:5000/api/battles/${battle._id}/opinion/${opinionId}/like`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUser.id }),
       }
+    );
 
-      setBattle((prev) => ({
-        ...prev,
-        opinions: data.opinions,
-      }));
-    } catch (err) {
-      console.error("Like opinion failed", err);
+    const data = await res.json();
+    if (!data.success) {
+      showFeedback(data.message || "Failed to like opinion", "warning");
+      return;
     }
-  };
+
+    setBattle((prev) => ({
+      ...prev,
+      opinions: data.opinions,
+    }));
+
+    showFeedback("👍 Liked", "success");
+  } catch (err) {
+    showFeedback("Failed to like opinion", "warning");
+  }
+};
+
 
   const shareBattle = async () => {
     try {
@@ -216,6 +211,22 @@ function Battle() {
     setFeedback({ message, type });
     setTimeout(() => setFeedback(null), 3000);
   };
+
+  const opinions = battle?.opinions || [];
+
+
+  // 🔥 Top opinion (most likes)
+  const topOpinion =
+    opinions.length > 0
+      ? [...opinions].sort((a, b) => b.likes.length - a.likes.length)[0]
+      : null;
+
+  // 👍 Remaining opinions (excluding top), sorted by likes
+  const otherOpinions = topOpinion
+    ? opinions
+        .filter((op) => op.id !== topOpinion.id)
+        .sort((a, b) => b.likes.length - a.likes.length)
+    : [];
 
   if (loading) {
     return (
@@ -249,10 +260,7 @@ function Battle() {
   }
 
   const totalVotes = battle.votesA + battle.votesB;
-  const topOpinion =
-    battle.opinions?.length > 0
-      ? [...battle.opinions].sort((a, b) => b.likes.length - a.likes.length)[0]
-      : null;
+  
 
   return (
     <div className="battle-page">
@@ -260,10 +268,6 @@ function Battle() {
         <div className={`feedback ${feedback.type}`}>{feedback.message}</div>
       )}
       <BattleHeader title={battle.title} />
-
-      {feedback && (
-        <div className={`feedback ${feedback.type}`}>{feedback.message}</div>
-      )}
 
       <div className="battle-actions">
         <button className="secondary-btn" onClick={shareBattle}>
@@ -339,16 +343,15 @@ function Battle() {
       {/* 💬 OPINIONS */}
       <OpinionSection
         hasVoted={hasVoted}
-        currentUser={currentUser}
         opinionText={opinionText}
         setOpinionText={setOpinionText}
         onSubmit={submitOpinion}
-        opinions={battle.opinions || []}
+        topOpinion={topOpinion}
+        opinions={otherOpinions}
         showOpinions={showOpinions}
         toggleOpinions={() => setShowOpinions((s) => !s)}
         likeOpinion={likeOpinion}
-        userId={userId}
-        topOpinion={topOpinion}
+        userId={currentUser?.id}
       />
     </div>
   );

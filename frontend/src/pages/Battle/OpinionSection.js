@@ -15,14 +15,24 @@ function OpinionSection({
 }) {
   return (
     <div className="opinions-wrapper">
+      {topOpinion && (
+        <div className="opinion-card top-opinion">
+          <div className="top-opinion-header">🔥 Top Opinion</div>
+
+          <p className="opinion-text">{topOpinion.text}</p>
+
+          <div className="opinion-meta">👍 {topOpinion.likes.length} likes</div>
+        </div>
+      )}
+
       {/* ✍️ WRITE OPINION */}
       {/* 🔒 Not logged in */}
-      {hasVoted && !currentUser && (
+      {hasVoted && !userId && (
         <p className="empty-state">🔒 Login to share your opinion.</p>
       )}
 
       {/* ✍️ Write opinion (only when logged in + voted) */}
-      {hasVoted && currentUser && (
+      {hasVoted && userId &&  (
         <div className="opinion-card write-card">
           <h3 className="opinion-title">💬 Why did you choose this?</h3>
 
@@ -50,17 +60,7 @@ function OpinionSection({
       )}
 
       {/* 🔥 TOP OPINION */}
-      {topOpinion && (topOpinion.likes || []).length > 0 && (
-        <div className="opinion-card top-opinion">
-          <div className="top-opinion-header">🔥 Top Opinion</div>
-
-          <p className="opinion-text">{topOpinion.text}</p>
-
-          <div className="opinion-meta">
-            👍 {(topOpinion.likes || []).length} likes
-          </div>
-        </div>
-      )}
+    
 
       {/* 👀 TOGGLE OPINIONS */}
       {opinions.length > 0 && (
