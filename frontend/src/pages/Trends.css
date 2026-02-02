@@ -129,3 +129,19 @@
   transform: translateY(-4px);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
 }
+
+.battle-feed-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.battle-feed-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.feed-title {
+  font-weight: 600;
+}
+.trends-page section {
+  margin-bottom: 40px;
+}
