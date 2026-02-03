@@ -14,27 +14,32 @@ function Profile() {
   const [savedBattles, setSavedBattles] = useState([]);
 
   const removeSavedBattle = async (battleId) => {
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/battles/${battleId}/save`,
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: currentUser.id,
-          }),
-        },
-      );
-
-      const data = await res.json();
-
-      if (data.success) {
-        setSavedBattles((prev) => prev.filter((b) => b._id !== battleId));
+  try {
+    const res = await fetch(
+      `http://localhost:5000/api/battles/${battleId}/save`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          username: currentUser.username,
+        }),
       }
-    } catch (err) {
-      console.error("Remove saved battle failed", err);
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      // 🔥 remove instantly from UI
+      setSavedBattles((prev) =>
+        prev.filter((b) => b._id !== battleId)
+      );
     }
-  };
+  } catch (err) {
+    console.error("Failed to remove saved battle");
+  }
+};
+
 
   // 🔒 Guard: must be logged in
   useEffect(() => {
