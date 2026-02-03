@@ -11,6 +11,30 @@ function Profile() {
   const [createdBattles, setCreatedBattles] = useState([]);
   const [votedBattles, setVotedBattles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [savedBattles, setSavedBattles] = useState([]);
+
+  const removeSavedBattle = async (battleId) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/battles/${battleId}/save`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: currentUser.id,
+          }),
+        },
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        setSavedBattles((prev) => prev.filter((b) => b._id !== battleId));
+      }
+    } catch (err) {
+      console.error("Remove saved battle failed", err);
+    }
+  };
 
   // 🔒 Guard: must be logged in
   useEffect(() => {
@@ -22,13 +46,14 @@ function Profile() {
     const fetchActivity = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/users/${currentUser.id}/activity`
+          `http://localhost:5000/api/users/${currentUser.id}/activity`,
         );
         const data = await res.json();
 
         if (data.success) {
           setCreatedBattles(data.createdBattles);
           setVotedBattles(data.votedBattles);
+          setSavedBattles(data.savedBattles || []);
         }
       } catch (err) {
         console.error("Failed to load user activity");
@@ -57,18 +82,14 @@ function Profile() {
         {loading ? (
           <p className="empty-state">Loading...</p>
         ) : createdBattles.length === 0 ? (
-          <p className="empty-state">
-            You haven’t created any battles yet.
-          </p>
+          <p className="empty-state">You haven’t created any battles yet.</p>
         ) : (
           <div className="battle-feed">
             {createdBattles.map((b) => (
               <div
                 key={b._id}
                 className="battle-feed-card"
-                onClick={() =>
-                  navigate(`/battle?battleId=${b._id}`)
-                }
+                onClick={() => navigate(`/battle?battleId=${b._id}`)}
               >
                 <div className="feed-title">{b.title}</div>
                 <div className="feed-options">
@@ -89,18 +110,14 @@ function Profile() {
         {loading ? (
           <p className="empty-state">Loading...</p>
         ) : votedBattles.length === 0 ? (
-          <p className="empty-state">
-            You haven’t voted on any battles yet.
-          </p>
+          <p className="empty-state">You haven’t voted on any battles yet.</p>
         ) : (
           <div className="battle-feed">
             {votedBattles.map((b) => (
               <div
                 key={b._id}
                 className="battle-feed-card"
-                onClick={() =>
-                  navigate(`/battle?battleId=${b._id}`)
-                }
+                onClick={() => navigate(`/battle?battleId=${b._id}`)}
               >
                 <div className="feed-title">{b.title}</div>
                 <div className="feed-options">
@@ -108,6 +125,44 @@ function Profile() {
                   <strong>VS</strong>
                   <span>{b.optionB}</span>
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ⭐ SAVED BATTLES */}
+      <section className="profile-section">
+        <h2>⭐ Saved Battles</h2>
+
+        {loading ? (
+          <p className="empty-state">Loading...</p>
+        ) : savedBattles.length === 0 ? (
+          <p className="empty-state">You haven’t saved any battles yet.</p>
+        ) : (
+          <div className="battle-feed">
+            {savedBattles.map((b) => (
+              <div key={b._id} className="battle-feed-card">
+                {/* 🔹 Clickable battle area */}
+                <div
+                  className="battle-click"
+                  onClick={() => navigate(`/battle?battleId=${b._id}`)}
+                >
+                  <div className="feed-title">{b.title}</div>
+                  <div className="feed-options">
+                    <span>{b.optionA}</span>
+                    <strong>VS</strong>
+                    <span>{b.optionB}</span>
+                  </div>
+                </div>
+
+                {/* ❌ Remove saved button */}
+                <button
+                  className="remove-saved-btn"
+                  onClick={() => removeSavedBattle(b._id)}
+                >
+                  ❌ Remove
+                </button>
               </div>
             ))}
           </div>

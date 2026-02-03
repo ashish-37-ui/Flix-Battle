@@ -31,6 +31,7 @@ function Battle() {
   const [opinionText, setOpinionText] = useState("");
   const [showOpinions, setShowOpinions] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const [isSaved, setIsSaved] = useState(false);
 
   /* ---------------- FETCH BATTLE ---------------- */
   useEffect(() => {
@@ -40,33 +41,35 @@ function Battle() {
       return;
     }
 
-    const fetchBattle = async () => {
-      try {
-        const res = await fetch(
-          `http://localhost:5000/api/battles/${battleId}?userId=${userId}`,
-        );
-        const data = await res.json();
+   const fetchBattle = async () => {
+  try {
+    const res = await fetch(
+      `http://localhost:5000/api/battles/${battleId}?userId=${userId}`
+    );
+    const data = await res.json();
 
-        if (!data.success) {
-          setError(data.message);
-          setLoading(false);
-          return;
-        }
+    if (!data.success) {
+      setError(data.message);
+      return;
+    }
 
-        setBattle({
-          ...data.battle,
-          votesA: data.votes.A,
-          votesB: data.votes.B,
-        });
+    setBattle({
+      ...data.battle,
+      votesA: data.votes.A,
+      votesB: data.votes.B,
+    });
 
-        setHasVoted(!!data.userVote);
-        setUserVote(data.userVote);
-      } catch (err) {
-        setError("Failed to load battle");
-      } finally {
-        setLoading(false);
-      }
-    };
+    setHasVoted(!!data.userVote);
+    setUserVote(data.userVote);
+    setIsSaved(data.isSaved); // ✅ ONLY THIS
+  } catch (err) {
+    console.error(err);
+    setError("Failed to load battle");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
     fetchBattle();
   }, [battleId, userId]);
@@ -162,41 +165,40 @@ function Battle() {
   };
 
   /* ---------------- LIKE OPINION ---------------- */
- const likeOpinion = async (opinionId) => {
-  if (!currentUser) {
-    navigate("/login", {
-      state: { from: location.pathname + location.search },
-    });
-    return;
-  }
-
-  try {
-    const res = await fetch(
-      `http://localhost:5000/api/battles/${battle._id}/opinion/${opinionId}/like`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: currentUser.id }),
-      }
-    );
-
-    const data = await res.json();
-    if (!data.success) {
-      showFeedback(data.message || "Failed to like opinion", "warning");
+  const likeOpinion = async (opinionId) => {
+    if (!currentUser) {
+      navigate("/login", {
+        state: { from: location.pathname + location.search },
+      });
       return;
     }
 
-    setBattle((prev) => ({
-      ...prev,
-      opinions: data.opinions,
-    }));
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/battles/${battle._id}/opinion/${opinionId}/like`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id }),
+        },
+      );
 
-    showFeedback("👍 Liked", "success");
-  } catch (err) {
-    showFeedback("Failed to like opinion", "warning");
-  }
-};
+      const data = await res.json();
+      if (!data.success) {
+        showFeedback(data.message || "Failed to like opinion", "warning");
+        return;
+      }
 
+      setBattle((prev) => ({
+        ...prev,
+        opinions: data.opinions,
+      }));
+
+      showFeedback("👍 Liked", "success");
+    } catch (err) {
+      showFeedback("Failed to like opinion", "warning");
+    }
+  };
 
   const shareBattle = async () => {
     try {
@@ -207,13 +209,42 @@ function Battle() {
     }
   };
 
+const toggleSaveBattle = async () => {
+  if (!currentUser) {
+    navigate("/login", { state: { from: location.pathname + location.search } });
+    return;
+  }
+
+  const res = await fetch(
+    `http://localhost:5000/api/battles/${battle._id}/save`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: currentUser.id,
+        username: currentUser.username,
+      }),
+    }
+  );
+
+  const data = await res.json();
+
+  if (data.success) {
+    setIsSaved(data.saved); // 🔥 SOURCE OF TRUTH
+    showFeedback(
+      data.saved ? "⭐ Battle saved" : "❌ Removed from saved",
+      "success"
+    );
+  }
+};
+
+
   const showFeedback = (message, type = "success") => {
     setFeedback({ message, type });
     setTimeout(() => setFeedback(null), 3000);
   };
 
   const opinions = battle?.opinions || [];
-
 
   // 🔥 Top opinion (most likes)
   const topOpinion =
@@ -260,7 +291,6 @@ function Battle() {
   }
 
   const totalVotes = battle.votesA + battle.votesB;
-  
 
   return (
     <div className="battle-page">
@@ -272,6 +302,12 @@ function Battle() {
       <div className="battle-actions">
         <button className="secondary-btn" onClick={shareBattle}>
           🔗 Share Battle
+        </button>
+        <button
+          className={`save-btn ${isSaved ? "saved" : ""}`}
+          onClick={toggleSaveBattle}
+        >
+          {isSaved ? "⭐ Saved" : "☆ Save Battle"}
         </button>
       </div>
 
