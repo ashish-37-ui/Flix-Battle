@@ -63,6 +63,8 @@ router.get("/", async (req, res) => {
         totalVotes,
         createdAt: battle.createdAt,
         trendingScore,
+        opinionCount,
+        
       };
     });
 

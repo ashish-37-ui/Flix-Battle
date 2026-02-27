@@ -359,6 +359,36 @@
   border-radius: 3px;
 }
 
+/* ===== MOST DEBATED SECTION ===== */
+
+.most-debated {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.most-debated .section-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 30px;
+}
+
+.most-debated .battle-feed {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.most-debated .battle-feed-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.most-debated .battle-feed-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
 
 
 

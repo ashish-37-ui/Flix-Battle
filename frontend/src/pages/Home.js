@@ -5,7 +5,6 @@ import { useRef } from "react";
 
 //import Skeleton from "../components/Skeleton";
 
-
 import "./Home.css";
 
 function Home() {
@@ -13,14 +12,12 @@ function Home() {
   const currentUser = getCurrentUser();
   const searchRef = useRef(null);
 
-
   const [battles, setBattles] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-const [searchResults, setSearchResults] = useState([]);
-const [searching, setSearching] = useState(false);
-const [query, setQuery] = useState("");
 
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     const fetchBattles = async () => {
@@ -49,38 +46,40 @@ const [query, setQuery] = useState("");
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5);
 
+  const mostDebatedBattles = [...battles]
+    .sort((a, b) => (b.opinionCount || 0) - (a.opinionCount || 0))
+    .slice(0, 5);
+
   const handleSearch = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!query.trim()) {
-    setSearchResults([]);
-    return;
-  }
-
-  try {
-    setSearching(true);
-    const res = await fetch(
-      `http://localhost:5000/api/battles?q=${encodeURIComponent(query)}`
-    );
-    const data = await res.json();
-
-    if (data.success) {
-      setSearchResults(data.battles);
-      setTimeout(() => {
-        searchRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 100);
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
     }
-  } catch (err) {
-    console.error("Search failed");
-  } finally {
-    setSearching(false);
-  }
-};
 
+    try {
+      setSearching(true);
+      const res = await fetch(
+        `http://localhost:5000/api/battles?q=${encodeURIComponent(query)}`,
+      );
+      const data = await res.json();
 
+      if (data.success) {
+        setSearchResults(data.battles);
+        setTimeout(() => {
+          searchRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }, 100);
+      }
+    } catch (err) {
+      console.error("Search failed");
+    } finally {
+      setSearching(false);
+    }
+  };
 
   return (
     <>
@@ -108,72 +107,66 @@ const [query, setQuery] = useState("");
         </button>
       </section>
 
-     <section className="search-section">
-  <form onSubmit={handleSearch} className="search-bar">
-    <div className="search-input-wrapper">
-      <input
-        placeholder="Search battles (movies, actors, shows...)"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
+      <section className="search-section">
+        <form onSubmit={handleSearch} className="search-bar">
+          <div className="search-input-wrapper">
+            <input
+              placeholder="Search battles (movies, actors, shows...)"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+
+            {query && (
+              <button
+                type="button"
+                className="clear-search"
+                onClick={() => {
+                  setQuery("");
+                  setSearchResults([]);
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          <button type="submit">Search</button>
+        </form>
+      </section>
 
       {query && (
-        <button
-          type="button"
-          className="clear-search"
-          onClick={() => {
-            setQuery("");
-            setSearchResults([]);
-          }}
-        >
-          ✕
-        </button>
+        <section className="search-results" ref={searchRef}>
+          <h2>🔍 Search Results</h2>
+
+          {searching ? (
+            <p className="empty-state">Searching…</p>
+          ) : searchResults.length === 0 ? (
+            <p className="empty-state">No battles found.</p>
+          ) : (
+            <div className="battle-feed search-feed">
+              {searchResults.map((b) => (
+                <div
+                  key={b._id}
+                  className="battle-feed-card"
+                  onClick={() => navigate(`/battle?battleId=${b._id}`)}
+                >
+                  <div className="feed-title">
+                    {highlightMatch(b.title, query)}
+                  </div>
+
+                  <div className="feed-options">
+                    <span>{highlightMatch(b.optionA, query)}</span>
+                    <strong>VS</strong>
+                    <span>{highlightMatch(b.optionB, query)}</span>
+                  </div>
+
+                  <div className="feed-meta">{b.totalVotes} votes</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       )}
-    </div>
-
-    <button type="submit">Search</button>
-  </form>
-</section>
-
-  {query && (
-  <section className="search-results" ref={searchRef}>
-    <h2>🔍 Search Results</h2>
-
-    {searching ? (
-      <p className="empty-state">Searching…</p>
-    ) : searchResults.length === 0 ? (
-      <p className="empty-state">No battles found.</p>
-    ) : (
-      <div className="battle-feed search-feed">
-        {searchResults.map((b) => (
-          <div
-            key={b._id}
-            className="battle-feed-card"
-            onClick={() =>
-              navigate(`/battle?battleId=${b._id}`)
-            }
-          >
-            <div className="feed-title">
-              {highlightMatch(b.title, query)}
-            </div>
-
-            <div className="feed-options">
-              <span>{highlightMatch(b.optionA, query)}</span>
-              <strong>VS</strong>
-              <span>{highlightMatch(b.optionB, query)}</span>
-            </div>
-
-            <div className="feed-meta">
-              {b.totalVotes} votes
-            </div>
-          </div>
-        ))}
-      </div>
-    )}
-  </section>
-)}
-
-
 
       {/* 🎯 CATEGORIES (MOVED UP) */}
       <section id="battle-categories" className="battle-type-section">
@@ -214,7 +207,7 @@ const [query, setQuery] = useState("");
         </div>
       </section>
 
-       <section className="create-battle">
+      <section className="create-battle">
         <h2>Create Your Own Battle</h2>
         <p>Pick any two things and let people decide.</p>
 
@@ -231,10 +224,6 @@ const [query, setQuery] = useState("");
           Create a Battle ✨
         </button>
       </section>
-
-
-
-
 
       {/* 🔥 POPULAR */}
       <section className="popular-battles">
@@ -267,6 +256,30 @@ const [query, setQuery] = useState("");
             ))}
           </div>
         )}
+      </section>
+
+      <section className="most-debated">
+        <h2 className="section-title">💬 Most Debated</h2>
+
+        <div className="battle-feed">
+          {mostDebatedBattles.map((b) => (
+            <div
+              key={b._id}
+              className="battle-feed-card"
+              onClick={() => navigate(`/battle?battleId=${b._id}`)}
+            >
+              <div className="feed-title">{b.title}</div>
+
+              <div className="feed-options">
+                <span>{b.optionA}</span>
+                <strong>VS</strong>
+                <span>{b.optionB}</span>
+              </div>
+
+              <div className="feed-meta">💬 {b.opinionCount} opinions</div>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* ✨ RECENT */}
@@ -305,7 +318,6 @@ const [query, setQuery] = useState("");
       </section>
 
       {/* ✨ CREATE */}
-     
     </>
   );
 }
@@ -323,9 +335,8 @@ function highlightMatch(text, query) {
       </span>
     ) : (
       part
-    )
+    ),
   );
 }
-
 
 export default Home;
