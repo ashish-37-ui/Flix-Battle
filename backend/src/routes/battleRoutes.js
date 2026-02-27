@@ -33,11 +33,26 @@ router.get("/", async (req, res) => {
       ];
     }
 
-    const battles = await Battle.find(filter).sort({ createdAt: -1 });
+    const battles = await Battle.find(filter);
 
-    const formattedBattles = battles.map((battle) => {
-      const votesA = battle.votes.filter((v) => v.option === "A").length;
-      const votesB = battle.votes.filter((v) => v.option === "B").length;
+    const now = new Date();
+
+    const enhancedBattles = battles.map((battle) => {
+      const votesA = battle.votes.filter(v => v.option === "A").length;
+      const votesB = battle.votes.filter(v => v.option === "B").length;
+      const totalVotes = votesA + votesB;
+
+      const opinionCount = battle.opinions.length;
+
+      const hoursOld =
+        (now - new Date(battle.createdAt)) / (1000 * 60 * 60);
+
+      const freshnessBoost = Math.max(24 - hoursOld, 0);
+
+      const trendingScore =
+        (totalVotes * 2) +
+        (opinionCount * 3) +
+        freshnessBoost;
 
       return {
         _id: battle._id,
@@ -45,15 +60,20 @@ router.get("/", async (req, res) => {
         type: battle.type,
         optionA: battle.optionA,
         optionB: battle.optionB,
-        totalVotes: votesA + votesB,
+        totalVotes,
         createdAt: battle.createdAt,
+        trendingScore,
       };
     });
 
+    // 🔥 SORT BY SMART SCORE
+    enhancedBattles.sort((a, b) => b.trendingScore - a.trendingScore);
+
     res.json({
       success: true,
-      battles: formattedBattles,
+      battles: enhancedBattles,
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,

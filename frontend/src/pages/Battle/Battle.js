@@ -9,7 +9,7 @@ import BattleHeader from "./BattleHeader";
 import VoteSection from "./VoteSection";
 import ResultsSection from "./ResultsSection";
 import OpinionSection from "./OpinionSection";
-
+ 
 function Battle() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
