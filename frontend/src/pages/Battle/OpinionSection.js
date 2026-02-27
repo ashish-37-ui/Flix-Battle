@@ -27,7 +27,7 @@ function OpinionSection({
 
       {/* ✍️ WRITE OPINION */}
       {/* 🔒 Not logged in */}
-      {hasVoted && !userId && (
+      {hasVoted && !userId && ( 
         <p className="empty-state">🔒 Login to share your opinion.</p>
       )}
 

@@ -2,6 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const router = express.Router();
 const Battle = require("../models/Battle");
+const getOrCreateUser = require("../utils/getOrCreateUser");
+const User = require("../models/User");
 
 /**
  * GET /api/battles
@@ -34,8 +36,8 @@ router.get("/", async (req, res) => {
     const battles = await Battle.find(filter).sort({ createdAt: -1 });
 
     const formattedBattles = battles.map((battle) => {
-      const votesA = battle.votes.filter(v => v.option === "A").length;
-      const votesB = battle.votes.filter(v => v.option === "B").length;
+      const votesA = battle.votes.filter((v) => v.option === "A").length;
+      const votesB = battle.votes.filter((v) => v.option === "B").length;
 
       return {
         _id: battle._id,
@@ -60,7 +62,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-
 /**
  * GET /api/battles/:id
  * Fetch single battle + derived votes + userVote
@@ -78,7 +79,6 @@ router.get("/:id", async (req, res) => {
 
   try {
     const battle = await Battle.findById(id);
-
     if (!battle) {
       return res.status(404).json({
         success: false,
@@ -86,27 +86,33 @@ router.get("/:id", async (req, res) => {
       });
     }
 
-    // 🔹 Derive votes from votes array
     const votesA = battle.votes.filter((v) => v.option === "A").length;
     const votesB = battle.votes.filter((v) => v.option === "B").length;
 
-    // 🔹 Find user's vote (if logged in)
     let userVote = null;
+    let isSaved = false;
+
     if (userId) {
-      const found = battle.votes.find((v) => v.userId === userId);
-      if (found) userVote = found.option;
+      const user = await User.findOne({ userId });
+
+      if (user) {
+        const vote = battle.votes.find((v) => v.userId === userId);
+        if (vote) userVote = vote.option;
+
+        isSaved = user.savedBattles.some(
+          (bId) => bId.toString() === battle._id.toString(),
+        );
+      }
     }
 
     res.json({
       success: true,
       battle,
-      votes: {
-        A: votesA,
-        B: votesB,
-      },
+      votes: { A: votesA, B: votesB },
       userVote,
+      isSaved, // ✅ SINGLE SOURCE OF TRUTH
     });
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({
       success: false,
       message: "Failed to fetch battle",
@@ -120,9 +126,9 @@ router.get("/:id", async (req, res) => {
  */
 router.post("/", async (req, res) => {
   try {
-    const { title, type, optionA, optionB, createdBy } = req.body;
+    const { title, type, optionA, optionB, createdBy, username } = req.body;
 
-    if (!title || !type || !optionA || !optionB) {
+    if (!title || !type || !optionA || !optionB || !createdBy) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -136,7 +142,19 @@ router.post("/", async (req, res) => {
       optionB,
       createdBy,
       votes: [],
+      opinions: [],
     });
+
+    const user = await getOrCreateUser({
+      userId: createdBy,
+      username: username || createdBy,
+    });
+
+    // 3️⃣ Track created battle (IMPORTANT)
+    if (!user.createdBattles.includes(battle._id)) {
+      user.createdBattles.push(battle._id);
+      await user.save();
+    }
 
     res.status(201).json({
       success: true,
@@ -158,7 +176,7 @@ router.post("/", async (req, res) => {
  * Enforces one vote per user per battle
  */
 router.post("/:id/vote", async (req, res) => {
-  const { option, userId } = req.body;
+  const { option, userId, username } = req.body;
 
   if (!userId) {
     return res.status(401).json({
@@ -184,9 +202,7 @@ router.post("/:id/vote", async (req, res) => {
       });
     }
 
-    // Check if user already voted
-    const existingVote = battle.votes.find((vote) => vote.userId === userId);
-
+    const existingVote = battle.votes.find((v) => v.userId === userId);
     if (existingVote) {
       return res.status(400).json({
         success: false,
@@ -194,24 +210,28 @@ router.post("/:id/vote", async (req, res) => {
       });
     }
 
-    // New vote only
-    battle.votes.push({ userId, option });
+    const user = await getOrCreateUser({
+      userId,
+      username: username || userId,
+    });
 
+    battle.votes.push({ userId, option });
     await battle.save();
 
-    // Derive counts (single source of truth)
+    if (!user.votedBattles.includes(battle._id)) {
+      user.votedBattles.push(battle._id);
+      await user.save();
+    }
+
     const votesA = battle.votes.filter((v) => v.option === "A").length;
     const votesB = battle.votes.filter((v) => v.option === "B").length;
 
     res.json({
       success: true,
-      votes: {
-        A: votesA,
-        B: votesB,
-      },
+      votes: { A: votesA, B: votesB },
       userVote: option,
     });
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({
       success: false,
       message: "Vote failed",
@@ -222,13 +242,81 @@ router.post("/:id/vote", async (req, res) => {
 /**
  * POST /api/battles/:id/opinion
  */
-router.post("/:id/opinion", async (req, res) => {
-  const { userId, option, text } = req.body;
+router.post("/:id/vote", async (req, res) => {
+  const { option, userId, username } = req.body;
 
-  if (!userId || !option || !text) {
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: "User not authenticated",
+    });
+  }
+
+  if (!["A", "B"].includes(option)) {
     return res.status(400).json({
       success: false,
-      message: "Missing opinion data",
+      message: "Invalid vote option",
+    });
+  }
+
+  try {
+    const battle = await Battle.findById(req.params.id);
+
+    if (!battle) {
+      return res.status(404).json({
+        success: false,
+        message: "Battle not found",
+      });
+    }
+
+    const existingVote = battle.votes.find((vote) => vote.userId === userId);
+
+    if (existingVote) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already voted on this battle",
+      });
+    }
+
+    // ✅ Auto-create user (Option A)
+    const user = await getOrCreateUser({
+      userId,
+      username: username || userId,
+    });
+
+    // 🗳️ Save vote
+    battle.votes.push({ userId, option });
+    await battle.save();
+
+    // 👤 Track voted battle
+    if (!user.votedBattles.includes(battle._id)) {
+      user.votedBattles.push(battle._id);
+      await user.save();
+    }
+
+    const votesA = battle.votes.filter((v) => v.option === "A").length;
+    const votesB = battle.votes.filter((v) => v.option === "B").length;
+
+    res.json({
+      success: true,
+      votes: { A: votesA, B: votesB },
+      userVote: option,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Vote failed",
+    });
+  }
+});
+
+router.post("/:id/save", async (req, res) => {
+  const { userId, username } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: "User not authenticated",
     });
   }
 
@@ -241,7 +329,77 @@ router.post("/:id/opinion", async (req, res) => {
       });
     }
 
-    const alreadyPosted = battle.opinions.find((op) => op.userId === userId);
+    const user = await getOrCreateUser({ userId, username });
+
+    const battleIdStr = battle._id.toString();
+
+    const index = user.savedBattles.findIndex(
+      (id) => id.toString() === battleIdStr
+    );
+
+    let saved;
+
+    if (index !== -1) {
+      // 🔥 REMOVE
+      user.savedBattles.splice(index, 1);
+      saved = false;
+    } else {
+      // ⭐ ADD
+      user.savedBattles.push(battle._id);
+      saved = true;
+    }
+
+    await user.save();
+
+    res.json({
+      success: true,
+      saved,
+    });
+  } catch (err) {
+    console.error("Save toggle failed:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to toggle save",
+    });
+  }
+});
+
+
+/**
+ * POST /api/battles/:id/opinion
+ * Submit opinion (one per user)
+ */
+router.post("/:id/opinion", async (req, res) => {
+  const { userId, option, text } = req.body;
+
+  if (!userId || !option || !text) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing opinion data",
+    });
+  }
+
+  if (!["A", "B"].includes(option)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid option",
+    });
+  }
+
+  try {
+    const battle = await Battle.findById(req.params.id);
+
+    if (!battle) {
+      return res.status(404).json({
+        success: false,
+        message: "Battle not found",
+      });
+    }
+
+    // ❌ Only one opinion per user
+    const alreadyPosted = battle.opinions.find(
+      (op) => op.userId === userId
+    );
 
     if (alreadyPosted) {
       return res.status(400).json({
@@ -250,6 +408,7 @@ router.post("/:id/opinion", async (req, res) => {
       });
     }
 
+    // ✅ Save opinion
     battle.opinions.push({
       id: Date.now().toString(),
       userId,
@@ -265,6 +424,7 @@ router.post("/:id/opinion", async (req, res) => {
       opinions: battle.opinions,
     });
   } catch (err) {
+    console.error("Opinion error:", err);
     res.status(500).json({
       success: false,
       message: "Failed to submit opinion",

@@ -135,6 +135,44 @@ const [query, setQuery] = useState("");
   </form>
 </section>
 
+  {query && (
+  <section className="search-results" ref={searchRef}>
+    <h2>🔍 Search Results</h2>
+
+    {searching ? (
+      <p className="empty-state">Searching…</p>
+    ) : searchResults.length === 0 ? (
+      <p className="empty-state">No battles found.</p>
+    ) : (
+      <div className="battle-feed search-feed">
+        {searchResults.map((b) => (
+          <div
+            key={b._id}
+            className="battle-feed-card"
+            onClick={() =>
+              navigate(`/battle?battleId=${b._id}`)
+            }
+          >
+            <div className="feed-title">
+              {highlightMatch(b.title, query)}
+            </div>
+
+            <div className="feed-options">
+              <span>{highlightMatch(b.optionA, query)}</span>
+              <strong>VS</strong>
+              <span>{highlightMatch(b.optionB, query)}</span>
+            </div>
+
+            <div className="feed-meta">
+              {b.totalVotes} votes
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+)}
+
 
 
       {/* 🎯 CATEGORIES (MOVED UP) */}
@@ -194,43 +232,7 @@ const [query, setQuery] = useState("");
         </button>
       </section>
 
-  {query && (
-  <section className="search-results" ref={searchRef}>
-    <h2>🔍 Search Results</h2>
 
-    {searching ? (
-      <p className="empty-state">Searching…</p>
-    ) : searchResults.length === 0 ? (
-      <p className="empty-state">No battles found.</p>
-    ) : (
-      <div className="battle-feed search-feed">
-        {searchResults.map((b) => (
-          <div
-            key={b._id}
-            className="battle-feed-card"
-            onClick={() =>
-              navigate(`/battle?battleId=${b._id}`)
-            }
-          >
-            <div className="feed-title">
-              {highlightMatch(b.title, query)}
-            </div>
-
-            <div className="feed-options">
-              <span>{highlightMatch(b.optionA, query)}</span>
-              <strong>VS</strong>
-              <span>{highlightMatch(b.optionB, query)}</span>
-            </div>
-
-            <div className="feed-meta">
-              {b.totalVotes} votes
-            </div>
-          </div>
-        ))}
-      </div>
-    )}
-  </section>
-)}
 
 
 
