@@ -476,6 +476,19 @@ button:disabled {
   color: #ef4444;
 }
 
+.momentum-meter {
+  margin-top: 20px;
+  padding: 10px 18px;
+  border-radius: 20px;
+  display: inline-block;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.momentum-meter span {
+  font-size: 14px;
+}
+
 
 
 @keyframes fadeInUp {

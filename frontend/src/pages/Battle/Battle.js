@@ -292,6 +292,19 @@ const toggleSaveBattle = async () => {
 
   const totalVotes = battle.votesA + battle.votesB;
 
+  const voteDifference = Math.abs(battle.votesA - battle.votesB);
+const engagementScore = totalVotes + (battle.opinions?.length || 0) * 2;
+
+let momentumLabel = "😐 Stable";
+
+if (engagementScore > 20 && voteDifference < totalVotes * 0.2) {
+  momentumLabel = "🔥 Heated Debate";
+} else if (engagementScore > 10) {
+  momentumLabel = "⚡ Active";
+} else if (engagementScore < 5) {
+  momentumLabel = "❄️ Cooling Down";
+}
+
   return (
     <div className="battle-page">
       {feedback && (
@@ -362,6 +375,8 @@ const toggleSaveBattle = async () => {
           totalVotes === 0 ? 0 : Math.round((battle.votesB / totalVotes) * 100)
         }
       />
+
+      <div className="momentum-meter"><span>{momentumLabel}</span></div>
 
       {hasVoted && battle.opinions.length === 0 && (
         <p className="empty-state">
