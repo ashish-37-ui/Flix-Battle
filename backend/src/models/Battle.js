@@ -27,6 +27,10 @@ const BattleSchema = new mongoose.Schema(
     createdBy: {
       type: String,
     },
+    isFeatured: {
+  type: Boolean,
+  default: false,
+},
 
     // 🗳️ VOTES (one per user)
     votes: [

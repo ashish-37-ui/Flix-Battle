@@ -64,6 +64,7 @@ router.get("/", async (req, res) => {
         createdAt: battle.createdAt,
         trendingScore,
         opinionCount,
+        isFeatured: battle.isFeatured,
         
       };
     });
@@ -483,6 +484,38 @@ router.post("/:id/opinion/:opinionId/like", async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ success: false });
+  }
+});
+
+// ⭐ Set daily featured battle
+router.post("/feature/:id", async (req, res) => {
+  try {
+    // reset existing featured battles
+    await Battle.updateMany({}, { isFeatured: false });
+
+    // set the new featured battle
+    const battle = await Battle.findByIdAndUpdate(
+      req.params.id,
+      { isFeatured: true },
+      { new: true }
+    );
+
+    if (!battle) {
+      return res.status(404).json({
+        success: false,
+        message: "Battle not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      battle,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to set featured battle",
+    });
   }
 });
 

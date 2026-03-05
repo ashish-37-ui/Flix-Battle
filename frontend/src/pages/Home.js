@@ -39,6 +39,8 @@ function Home() {
     fetchBattles();
   }, []);
 
+  
+
   const fetchLeaderboard = async () => {
   try {
     const res = await fetch(
@@ -59,6 +61,8 @@ fetchLeaderboard();
   const popularBattles = [...battles]
     .sort((a, b) => b.totalVotes - a.totalVotes)
     .slice(0, 5);
+
+    const spotlightBattle = popularBattles[0];
 
   const recentBattles = [...battles]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -124,6 +128,31 @@ fetchLeaderboard();
           Choose a Battle Type ↓
         </button>
       </section>
+
+      {spotlightBattle && (
+  <section className="spotlight-battle">
+    <div
+      className="spotlight-card"
+      onClick={() => navigate(`/battle?battleId=${spotlightBattle._id}`)}
+    >
+      <div className="spotlight-badge">🔥 Spotlight Battle</div>
+
+      <h2 className="spotlight-title">
+        {spotlightBattle.title}
+      </h2>
+
+      <div className="spotlight-options">
+        <span>{spotlightBattle.optionA}</span>
+        <strong>VS</strong>
+        <span>{spotlightBattle.optionB}</span>
+      </div>
+
+      <div className="spotlight-meta">
+        🗳 {spotlightBattle.totalVotes} votes
+      </div>
+    </div>
+  </section>
+)}
 
       <section className="search-section">
         <form onSubmit={handleSearch} className="search-bar">
@@ -305,10 +334,10 @@ fetchLeaderboard();
 
   <div className="leaderboard-list">
     {leaderboard.map((user, index) => (
-      <div key={user.userId} className="leaderboard-card">
+      <div key={user.userId} className="leaderboard-card clickable" onClick={() => navigate(`/creator/${user.userId}`)}>
         <div className="rank">#{index + 1}</div>
-        <div className="creator-name clickable" onClick={() => navigate(`/creator/${user.userId}`)}>
-          {user.username}
+        <div className="creator-name " >
+          {user.username}  
         </div>
         <div className="creator-stats">
           🔥 {user.score} pts • 🗳 {user.totalVotes} votes • 💬 {user.totalOpinions}
