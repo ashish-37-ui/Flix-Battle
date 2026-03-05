@@ -40,8 +40,8 @@ function Home() {
   }, []);
 
   
-
-  const fetchLeaderboard = async () => {
+useEffect(()=> {
+ const fetchLeaderboard = async () => {
   try {
     const res = await fetch(
       "http://localhost:5000/api/users/leaderboard/top"
@@ -57,6 +57,8 @@ function Home() {
 };
 
 fetchLeaderboard();
+})
+ 
 
   const popularBattles = [...battles]
     .sort((a, b) => b.totalVotes - a.totalVotes)

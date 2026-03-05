@@ -265,73 +265,73 @@ router.post("/:id/vote", async (req, res) => {
 /**
  * POST /api/battles/:id/opinion
  */
-router.post("/:id/vote", async (req, res) => {
-  const { option, userId, username } = req.body;
+// router.post("/:id/vote", async (req, res) => {
+//   const { option, userId, username } = req.body;
 
-  if (!userId) {
-    return res.status(401).json({
-      success: false,
-      message: "User not authenticated",
-    });
-  }
+//   if (!userId) {
+//     return res.status(401).json({
+//       success: false,
+//       message: "User not authenticated",
+//     });
+//   }
 
-  if (!["A", "B"].includes(option)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid vote option",
-    });
-  }
+//   if (!["A", "B"].includes(option)) {
+//     return res.status(400).json({
+//       success: false,
+//       message: "Invalid vote option",
+//     });
+//   }
 
-  try {
-    const battle = await Battle.findById(req.params.id);
+//   try {
+//     const battle = await Battle.findById(req.params.id);
 
-    if (!battle) {
-      return res.status(404).json({
-        success: false,
-        message: "Battle not found",
-      });
-    }
+//     if (!battle) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Battle not found",
+//       });
+//     }
 
-    const existingVote = battle.votes.find((vote) => vote.userId === userId);
+//     const existingVote = battle.votes.find((vote) => vote.userId === userId);
 
-    if (existingVote) {
-      return res.status(400).json({
-        success: false,
-        message: "You have already voted on this battle",
-      });
-    }
+//     if (existingVote) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "You have already voted on this battle",
+//       });
+//     }
 
-    // ✅ Auto-create user (Option A)
-    const user = await getOrCreateUser({
-      userId,
-      username: username || userId,
-    });
+//     // ✅ Auto-create user (Option A)
+//     const user = await getOrCreateUser({
+//       userId,
+//       username: username || userId,
+//     });
 
-    // 🗳️ Save vote
-    battle.votes.push({ userId, option });
-    await battle.save();
+//     // 🗳️ Save vote
+//     battle.votes.push({ userId, option });
+//     await battle.save();
 
-    // 👤 Track voted battle
-    if (!user.votedBattles.includes(battle._id)) {
-      user.votedBattles.push(battle._id);
-      await user.save();
-    }
+//     // 👤 Track voted battle
+//     if (!user.votedBattles.includes(battle._id)) {
+//       user.votedBattles.push(battle._id);
+//       await user.save();
+//     }
 
-    const votesA = battle.votes.filter((v) => v.option === "A").length;
-    const votesB = battle.votes.filter((v) => v.option === "B").length;
+//     const votesA = battle.votes.filter((v) => v.option === "A").length;
+//     const votesB = battle.votes.filter((v) => v.option === "B").length;
 
-    res.json({
-      success: true,
-      votes: { A: votesA, B: votesB },
-      userVote: option,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Vote failed",
-    });
-  }
-});
+//     res.json({
+//       success: true,
+//       votes: { A: votesA, B: votesB },
+//       userVote: option,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Vote failed",
+//     });
+//   }
+// });
 
 router.post("/:id/save", async (req, res) => {
   const { userId, username } = req.body;

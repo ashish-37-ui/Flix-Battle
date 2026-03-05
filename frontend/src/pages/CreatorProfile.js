@@ -53,10 +53,14 @@ function CreatorProfile() {
       <p>Creator Profile</p>
     </div>
 
+    <div className="creator-badge">
+  ⭐ Community Creator
+</div>
+
     <div className="creator-stats">
       <div className="stat-card">
-        <strong>{createdBattles.length}</strong>
         <span>Battles Created</span>
+<strong>{createdBattles.length}</strong>
       </div>
 
       <div className="stat-card">
@@ -68,13 +72,19 @@ function CreatorProfile() {
         <strong>{savedBattles.length}</strong>
         <span>Saved Battles</span>
       </div>
+      <div className="stat-card">
+  <span>Creator Score</span>
+  <strong>{totalVotesReceived}</strong>
+</div>
     </div>
 
     <section className="creator-section">
       <h2>🔥 Battles Created</h2>
 
       {createdBattles.length === 0 ? (
-        <p>This creator has not created any battles yet.</p>
+        <p className="empty-state">
+🔥 This creator hasn't started any battles yet.
+</p>
       ) : (
         <div className="battle-feed">
           {createdBattles.map((b) => (
