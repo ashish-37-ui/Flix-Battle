@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import CategoryBattles from "./pages/CategoryBattles";
 import Profile from "./pages/Profile";
 import ErrorBoundary from "./components/ErrorBoundary";
+import CreatorProfile from "./pages/CreatorProfile";
 
 function App() {
   const [currentUser, setCurrentUser] = useState(getCurrentUser());
@@ -43,6 +44,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/battle" element={<Battle />} />
+          <Route path="/creator/:userId" element={<CreatorProfile />} />
 
           {/* ❌ NO generic /battle route */}
           {/* Battle page is accessed only via /battle?battleId= */}

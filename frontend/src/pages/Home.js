@@ -18,6 +18,7 @@ function Home() {
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
+  const [leaderboard, setLeaderboard] = useState([]);
 
   useEffect(() => {
     const fetchBattles = async () => {
@@ -37,6 +38,23 @@ function Home() {
 
     fetchBattles();
   }, []);
+
+  const fetchLeaderboard = async () => {
+  try {
+    const res = await fetch(
+      "http://localhost:5000/api/users/leaderboard/top"
+    );
+    const data = await res.json();
+
+    if (data.success) {
+      setLeaderboard(data.leaderboard);
+    }
+  } catch (err) {
+    console.error("Failed to load leaderboard");
+  }
+};
+
+fetchLeaderboard();
 
   const popularBattles = [...battles]
     .sort((a, b) => b.totalVotes - a.totalVotes)
@@ -281,6 +299,24 @@ function Home() {
           ))}
         </div>
       </section>
+
+      <section className="leaderboard-section">
+  <h2 className="section-title">🏆 Top Creators</h2>
+
+  <div className="leaderboard-list">
+    {leaderboard.map((user, index) => (
+      <div key={user.userId} className="leaderboard-card">
+        <div className="rank">#{index + 1}</div>
+        <div className="creator-name clickable" onClick={() => navigate(`/creator/${user.userId}`)}>
+          {user.username}
+        </div>
+        <div className="creator-stats">
+          🔥 {user.score} pts • 🗳 {user.totalVotes} votes • 💬 {user.totalOpinions}
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
 
       {/* ✨ RECENT */}
       <section className="recent-battles">

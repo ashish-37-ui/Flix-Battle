@@ -39,4 +39,50 @@ router.get("/:userId/activity", async (req, res) => {
   }
 });
 
+// 🏆 GET TOP CREATORS
+router.get("/leaderboard/top", async (req, res) => {
+  try {
+    const users = await User.find().populate("createdBattles");
+
+    const leaderboard = users.map((user) => {
+      let totalVotes = 0;
+      let totalOpinions = 0;
+      let battleCount = user.createdBattles.length;
+
+      user.createdBattles.forEach((battle) => {
+        totalVotes += battle.votes.length;
+        totalOpinions += battle.opinions.length;
+      });
+
+      const score =
+        (totalVotes * 2) +
+        (totalOpinions * 3) +
+        (battleCount * 1);
+
+      return {
+        userId: user.userId,
+        username: user.username,
+        battleCount,
+        totalVotes,
+        totalOpinions,
+        score,
+      };
+    });
+
+    leaderboard.sort((a, b) => b.score - a.score);
+
+    res.json({
+      success: true,
+      leaderboard: leaderboard.slice(0, 5),
+    });
+
+  } catch (err) {
+    console.error("Leaderboard error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch leaderboard",
+    });
+  }
+});
+
 module.exports = router;

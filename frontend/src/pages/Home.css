@@ -389,6 +389,55 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
+.leaderboard-section {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.leaderboard-list {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.leaderboard-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8f9fa;
+  padding: 14px 18px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  transition: 0.2s ease;
+}
+
+.leaderboard-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.rank {
+  font-weight: 700;
+  font-size: 18px;
+  color: black;
+}
+
+.creator-name {
+  font-weight: 600;
+  color: black;
+}
+
+.creator-stats {
+  font-size: 13px;
+  color: #555;
+}
+
+.clickable {
+  cursor: pointer;
+}
+.clickable:hover {
+  text-decoration: underline;
+}
+
 
 
 
