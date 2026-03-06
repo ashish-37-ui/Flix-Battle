@@ -32,6 +32,7 @@ function Battle() {
   const [showOpinions, setShowOpinions] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
 
   /* ---------------- FETCH BATTLE ---------------- */
   useEffect(() => {
@@ -78,6 +79,7 @@ function Battle() {
 
   /* ---------------- VOTE ---------------- */
   const vote = async (option) => {
+    setSelectedOption(option);
     if (!currentUser) {
       navigate("/login", {
         state: { from: location.pathname + location.search },
@@ -358,6 +360,7 @@ if (engagementScore > 20 && voteDifference < totalVotes * 0.2) {
         optionB={battle.optionB}
         hasVoted={hasVoted}
         userVote={userVote}
+        selectedOption={selectedOption}
         onVoteA={() => vote("A")}
         onVoteB={() => vote("B")}
       />

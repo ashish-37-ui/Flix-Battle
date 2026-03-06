@@ -64,7 +64,8 @@ fetchLeaderboard();
     .sort((a, b) => b.totalVotes - a.totalVotes)
     .slice(0, 5);
 
-    const spotlightBattle = popularBattles[0];
+    const spotlightBattle =
+  battles.find((b) => b.isFeatured) || popularBattles[0];
 
   const recentBattles = [...battles]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -134,10 +135,16 @@ fetchLeaderboard();
       {spotlightBattle && (
   <section className="spotlight-battle">
     <div
-      className="spotlight-card"
+        className={`spotlight-card ${
+    spotlightBattle.isFeatured ? "daily" : ""
+  }`}
       onClick={() => navigate(`/battle?battleId=${spotlightBattle._id}`)}
     >
-      <div className="spotlight-badge">🔥 Spotlight Battle</div>
+      <div className="spotlight-badge">
+  {spotlightBattle.isFeatured
+    ? "🥇 Battle of the Day"
+    : "🔥 Trending Battle"}
+</div>
 
       <h2 className="spotlight-title">
         {spotlightBattle.title}

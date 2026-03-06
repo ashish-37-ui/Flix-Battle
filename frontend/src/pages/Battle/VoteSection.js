@@ -3,6 +3,7 @@ function VoteSection({
   optionB,
   hasVoted,
   userVote,
+  selectedOption,
   onVoteA,
   onVoteB,
 }) {
