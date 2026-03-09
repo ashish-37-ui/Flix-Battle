@@ -15,7 +15,7 @@ router.get("/:userId", async (req, res) => {
       userId: req.params.userId,
     })
       .sort({ createdAt: -1 })
-      .limit(20);
+      
 
     res.json({
       success: true,
@@ -45,6 +45,20 @@ router.post("/:id/read", async (req, res) => {
 
     res.json({ success: true });
   } catch {
+    res.status(500).json({ success: false });
+  }
+});
+
+router.post("/:userId/read", async (req, res) => {
+  try {
+    await Notification.updateMany(
+      { userId: req.params.userId, read: false },
+      { read: true }
+    );
+
+    res.json({ success: true });
+
+  } catch (err) {
     res.status(500).json({ success: false });
   }
 });

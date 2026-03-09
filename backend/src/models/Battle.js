@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const BattleSchema = new mongoose.Schema(
@@ -27,10 +28,11 @@ const BattleSchema = new mongoose.Schema(
     createdBy: {
       type: String,
     },
+
     isFeatured: {
-  type: Boolean,
-  default: false,
-},
+      type: Boolean,
+      default: false,
+    },
 
     // 🗳️ VOTES (one per user)
     votes: [
@@ -54,24 +56,55 @@ const BattleSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
+
         userId: {
           type: String,
           required: true,
         },
+
         option: {
           type: String,
           enum: ["A", "B"],
           required: true,
         },
+
         text: {
           type: String,
           required: true,
           maxlength: 200,
         },
+
         likes: {
           type: [String], // userIds
           default: [],
         },
+
+        // ⭐ REPLIES (nested discussion)
+        replies: [
+          {
+            id: {
+              type: String,
+              required: true,
+            },
+
+            userId: {
+              type: String,
+              required: true,
+            },
+
+            text: {
+              type: String,
+              required: true,
+              maxlength: 200,
+            },
+
+            createdAt: {
+              type: Date,
+              default: Date.now,
+            },
+          },
+        ],
+
         createdAt: {
           type: Date,
           default: Date.now,
@@ -83,3 +116,4 @@ const BattleSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("Battle", BattleSchema);
+

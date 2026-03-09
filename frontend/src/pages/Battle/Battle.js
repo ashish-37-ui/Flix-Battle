@@ -156,7 +156,7 @@ function Battle() {
       // ✅ Opinion accepted
       setBattle((prev) => ({
         ...prev,
-        opinions: data.opinions,
+        opinions: data.opinions || prev.opinions,
       }));
 
       setOpinionText("");
@@ -446,7 +446,7 @@ submitReply={submitReply}
         setOpinionText={setOpinionText}
         onSubmit={submitOpinion}
         topOpinion={topOpinion}
-        opinions={otherOpinions}
+        opinions={battle.opinions}
         showOpinions={showOpinions}
         toggleOpinions={() => setShowOpinions((s) => !s)}
         likeOpinion={likeOpinion}
