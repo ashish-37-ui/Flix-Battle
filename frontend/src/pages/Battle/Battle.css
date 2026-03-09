@@ -489,7 +489,34 @@ button:disabled {
   font-size: 14px;
 }
 
+.replies {
+  margin-left: 30px;
+  margin-top: 10px;
+}
 
+.reply {
+  background: rgba(255,255,255,0.05);
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.reply-box {
+  margin-left: 30px;
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.reply-box input {
+  flex: 1;
+  padding: 6px;
+}
+
+.reply-box button {
+  padding: 6px 10px;
+}
 
 
 

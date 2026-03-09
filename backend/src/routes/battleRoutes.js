@@ -438,6 +438,7 @@ router.post("/:id/opinion", async (req, res) => {
       option,
       text,
       likes: [],
+       replies: [],
     });
 
     await battle.save();
@@ -515,6 +516,58 @@ router.post("/feature/:id", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to set featured battle",
+    });
+  }
+});
+
+router.post("/:id/opinion/:opinionId/reply", async (req, res) => {
+  const { userId, text } = req.body;
+
+  if (!userId || !text) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing reply data"
+    });
+  }
+
+  try {
+    const battle = await Battle.findById(req.params.id);
+
+    if (!battle) {
+      return res.status(404).json({
+        success: false,
+        message: "Battle not found"
+      });
+    }
+
+    const opinion = battle.opinions.find(
+      op => op.id === req.params.opinionId
+    );
+
+    if (!opinion) {
+      return res.status(404).json({
+        success: false,
+        message: "Opinion not found"
+      });
+    }
+
+    opinion.replies.push({
+      id: Date.now().toString(),
+      userId,
+      text
+    });
+
+    await battle.save();
+
+    res.json({
+      success: true,
+      opinions: battle.opinions
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Reply failed"
     });
   }
 });

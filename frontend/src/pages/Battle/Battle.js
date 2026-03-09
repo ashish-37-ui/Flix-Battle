@@ -33,6 +33,7 @@ function Battle() {
   const [feedback, setFeedback] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
+  const [replyText, setReplyText] = useState({});
 
   /* ---------------- FETCH BATTLE ---------------- */
   useEffect(() => {
@@ -246,6 +247,43 @@ const toggleSaveBattle = async () => {
     setTimeout(() => setFeedback(null), 3000);
   };
 
+  const submitReply = async (opinionId) => {
+  const text = replyText[opinionId];
+
+  if (!text?.trim()) return;
+
+  try {
+    const res = await fetch(
+      `http://localhost:5000/api/battles/${battle._id}/opinion/${opinionId}/reply`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          text
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!data.success) return;
+
+    setBattle(prev => ({
+      ...prev,
+      opinions: data.opinions
+    }));
+
+    setReplyText(prev => ({
+      ...prev,
+      [opinionId]: ""
+    }));
+
+  } catch (err) {
+    console.error("Reply failed");
+  }
+};
+
   const opinions = battle?.opinions || [];
 
   // 🔥 Top opinion (most likes)
@@ -398,6 +436,9 @@ if (engagementScore > 20 && voteDifference < totalVotes * 0.2) {
       <OpinionSection
         hasVoted={hasVoted}
         opinionText={opinionText}
+        replyText={replyText}
+setReplyText={setReplyText}
+submitReply={submitReply}
         setOpinionText={setOpinionText}
         onSubmit={submitOpinion}
         topOpinion={topOpinion}
