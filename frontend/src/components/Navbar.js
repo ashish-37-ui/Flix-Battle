@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { getCurrentUser, logoutUser } from "../utils/auth";
+import NotificationBell from "../components/NotificationBell";
 
 import "./Navbar.css";
 
@@ -28,6 +29,8 @@ function Navbar() {
           </span>
         )}
       </div>
+
+      <NotificationBell />
 
       {/* 🔹 AUTH */}
       <div className="navbar-right">

@@ -247,21 +247,25 @@ const toggleSaveBattle = async () => {
     setTimeout(() => setFeedback(null), 3000);
   };
 
-  const submitReply = async (opinionId) => {
+ const submitReply = async (opinionId) => {
+
+  console.log("Replying to opinion:", opinionId);
   const text = replyText[opinionId];
 
-  if (!text?.trim()) return;
+  if (!text || !text.trim()) return;
 
   try {
     const res = await fetch(
       `http://localhost:5000/api/battles/${battle._id}/opinion/${opinionId}/reply`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           userId: currentUser.id,
-          text
-        })
+          text: text
+        }),
       }
     );
 
@@ -269,18 +273,18 @@ const toggleSaveBattle = async () => {
 
     if (!data.success) return;
 
-    setBattle(prev => ({
+    setBattle((prev) => ({
       ...prev,
-      opinions: data.opinions
+      opinions: data.opinions,
     }));
 
-    setReplyText(prev => ({
+    setReplyText((prev) => ({
       ...prev,
-      [opinionId]: ""
+      [opinionId]: "",
     }));
 
   } catch (err) {
-    console.error("Reply failed");
+    console.error("Reply failed", err);
   }
 };
 

@@ -1,9 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const router = express.Router();
+
 const Battle = require("../models/Battle");
-const getOrCreateUser = require("../utils/getOrCreateUser");
 const User = require("../models/User");
+const getOrCreateUser = require("../utils/getOrCreateUser");
+const Notification = require("../models/Notification");
 
 /**
  * GET /api/battles
@@ -239,6 +241,13 @@ router.post("/:id/vote", async (req, res) => {
     });
 
     battle.votes.push({ userId, option });
+  if (battle.createdBy !== userId) {
+  await Notification.create({
+    userId: battle.createdBy,
+    message: `${userId} voted on your battle`,
+    link: `/battle?battleId=${battle._id}`,
+  });
+}
     await battle.save();
 
     if (!user.votedBattles.includes(battle._id)) {
@@ -477,6 +486,13 @@ router.post("/:id/opinion/:opinionId/like", async (req, res) => {
     }
 
     opinion.likes.push(userId);
+   if (opinion.userId !== userId) {
+  await Notification.create({
+    userId: opinion.userId,
+    message: `${userId} liked your opinion`,
+    link: `/battle?battleId=${battle._id}`,
+  });
+}
     await battle.save();
 
     res.json({
@@ -551,11 +567,23 @@ router.post("/:id/opinion/:opinionId/reply", async (req, res) => {
       });
     }
 
+    if (!opinion.replies) {
+  opinion.replies = [];
+}
+
     opinion.replies.push({
       id: Date.now().toString(),
       userId,
       text
     });
+
+   if (opinion.userId !== userId) {
+  await Notification.create({
+    userId: opinion.userId,
+    message: `${userId} replied to your opinion`,
+    link: `/battle?battleId=${battle._id}`,
+  });
+}
 
     await battle.save();
 

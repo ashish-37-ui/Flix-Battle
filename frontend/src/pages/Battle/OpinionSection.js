@@ -21,16 +21,55 @@ function OpinionSection({
     <>
       <div className="opinions-wrapper">
         {topOpinion && (
-          <div className="opinion-card top-opinion">
-            <div className="top-opinion-header">🔥 Top Opinion</div>
+  <div className="opinion-card top-opinion">
 
-            <p className="opinion-text">{topOpinion.text}</p>
+    <div className="top-opinion-header">🔥 Top Opinion</div>
 
-            <div className="opinion-meta">
-              👍 {topOpinion.likes.length} likes
-            </div>
-          </div>
+    <p className="opinion-text">{topOpinion.text}</p>
+
+    <div className="opinion-meta">
+      <span>👍 {(topOpinion.likes || []).length}</span>
+
+      {topOpinion.userId !== userId &&
+        !(topOpinion.likes || []).includes(userId) && (
+          <button
+            className="like-btn"
+            onClick={() => likeOpinion(topOpinion.id)}
+          >
+            Like
+          </button>
         )}
+    </div>
+
+    {/* Replies */}
+    <div className="replies">
+      {topOpinion.replies?.map((reply) => (
+        <div key={reply.id} className="reply">
+          <strong>{reply.userId}</strong> {reply.text}
+        </div>
+      ))}
+    </div>
+
+    {/* Reply box */}
+    <div className="reply-box">
+      <input
+        placeholder="Write a reply..."
+        value={replyText?.[topOpinion.id] || ""}
+        onChange={(e) =>
+          setReplyText((prev) => ({
+            ...prev,
+            [topOpinion.id]: e.target.value,
+          }))
+        }
+      />
+
+      <button onClick={() => submitReply(topOpinion.id)}>
+        Reply
+      </button>
+    </div>
+
+  </div>
+)}
 
         {/* 🔒 Not logged in */}
         {hasVoted && !userId && (
