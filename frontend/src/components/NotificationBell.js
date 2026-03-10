@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getCurrentUser } from "../utils/auth";
 import { useNavigate } from "react-router-dom";
 import "./NotificationBell.css";
@@ -11,13 +11,15 @@ function NotificationBell() {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
 
+  const bellRef = useRef(null);
+
   useEffect(() => {
     if (!currentUser) return;
 
     const fetchNotifications = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/notifications/${currentUser.id}`
+          `http://localhost:5000/api/notifications/${encodeURIComponent(currentUser.id)}`
         );
 
         const data = await res.json();
@@ -33,6 +35,21 @@ function NotificationBell() {
     fetchNotifications();
   }, [currentUser]);
 
+  // ⭐ Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (bellRef.current && !bellRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const openNotification = async (notification) => {
@@ -43,15 +60,17 @@ function NotificationBell() {
       );
 
       navigate(notification.link);
+      setOpen(false);
     } catch {
       navigate(notification.link);
+      setOpen(false);
     }
   };
 
   if (!currentUser) return null;
 
   return (
-    <div className="notification-wrapper">
+    <div className="notification-wrapper" ref={bellRef}>
       <div
         className="notification-bell"
         onClick={() => setOpen(!open)}
@@ -94,3 +113,4 @@ function NotificationBell() {
 }
 
 export default NotificationBell;
+

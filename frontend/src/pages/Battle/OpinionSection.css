@@ -5,11 +5,15 @@
 
 /* Shared card */
 .opinion-card {
-  background: #0f0f0f;
-  border: 1px solid #1f1f1f;
-  border-radius: 10px;
+
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+   transition: all 0.2s ease;
+  
+  
+  border-radius: 12px;
   padding: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 /* Write card */
@@ -55,16 +59,15 @@
 /* Top opinion */
 .top-opinion {
   border-color: #22c55e;
-  background: linear-gradient(
-    180deg,
-    rgba(34, 197, 94, 0.08),
-    rgba(0, 0, 0, 0)
-  );
+  border: 1px solid #6c8cff;
+   background: rgba(108,140,255,0.08);
 }
 
 .top-opinion-header {
+  font-size: 13px;
   font-weight: 600;
   margin-bottom: 6px;
+  color: #8fa7ff;
 }
 
 /* Toggle */
@@ -89,6 +92,7 @@
   border: 1px solid #1f1f1f;
   border-radius: 10px;
   overflow: hidden;
+   margin-top: 20px;
 }
 
 .opinions-header {
@@ -96,6 +100,7 @@
   padding: 10px 14px;
   font-weight: 600;
   border-bottom: 1px solid #1f1f1f;
+  margin-bottom: 10px;
 }
 
 .opinions-list {
@@ -129,8 +134,9 @@
   display: flex;
   gap: 12px;
   align-items: center;
-  font-size: 12px;
+  font-size: 14px;
   color: #999;
+   margin-top: 8px;
 }
 
 .like-btn {

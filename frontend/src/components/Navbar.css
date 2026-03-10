@@ -1,65 +1,86 @@
 .navbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 14px 28px;
-  background: #0b0b0b;
-  border-bottom: 1px solid #1f1f1f;
+  justify-content: space-between;
+  padding: 12px 28px;
+
+   backdrop-filter: blur(14px);
+  background: rgba(14, 22, 40, 0.65);
+
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.navbar-left {
-  font-size: 18px;
-  font-weight: 600;
+/* LEFT */
+
+.logo {
+  font-size: 20px;
+  font-weight: 700;
   cursor: pointer;
+  color: white;
 }
+
+/* CENTER */
 
 .navbar-center {
   display: flex;
+  gap: 26px;
   align-items: center;
-  gap: 20px;
 }
 
-.navbar-center a,
-.nav-link,
-.create-link {
-  font-size: 14px;
-  color: #cfcfcf;
-  cursor: pointer;
+.navbar-center a {
   text-decoration: none;
+  color: #cbd4ff;
+  font-weight: 500;
 }
 
-.navbar-center a:hover,
-.nav-link:hover,
-.create-link:hover {
-  color: #ffffff;
+.navbar-center a:hover {
+  color: white;
 }
 
 .create-link {
-  opacity: 0.85;
+  cursor: pointer;
+  font-weight: 600;
+  color: #8fa7ff;
 }
+
+.create-link:hover {
+  color: white;
+}
+
+/* RIGHT */
 
 .navbar-right {
   display: flex;
   align-items: center;
+  gap: 18px;
+}
+
+.nav-link {
+  cursor: pointer;
 }
 
 .profile-menu {
   display: flex;
-  gap: 14px;
   align-items: center;
+  gap: 12px;
 }
 
 .profile-name {
-  font-size: 14px;
-  color: #aaa;
+  cursor: pointer;
+  font-weight: 500;
 }
 
 .logout-link {
-  font-size: 13px;
-  color: #888;
   cursor: pointer;
+  font-size: 14px;
+  opacity: 0.8;
 }
 
 .logout-link:hover {
-  color: #fff;
+  opacity: 1;
 }

@@ -22,11 +22,15 @@
 }
 
 .notification-dropdown {
+   backdrop-filter: blur(10px);
+
+  background: rgba(18, 28, 50, 0.9);
+
+  border: 1px solid rgba(255,255,255,0.06);
   position: absolute;
   right: 0;
   top: 35px;
   width: 280px;
-  background: #1b1b1b;
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.5);
   z-index: 100;
@@ -55,5 +59,20 @@
 .empty-notifications {
   padding: 10px;
   opacity: 0.7;
+}
+
+.notification-dropdown {
+  animation: dropdownFade 0.2s ease;
+}
+
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
