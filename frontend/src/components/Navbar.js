@@ -48,26 +48,21 @@ function Navbar() {
             Login
           </span>
         ) : (
-          <div className="profile-menu">
+         <div className="profile-menu">
+  <div className="profile-name">
+    👤 {currentUser.username || "Profile"}
+  </div>
 
-            <span
-              className="profile-name"
-              onClick={() => navigate("/profile")}
-            >
-              👤 {currentUser.username || "Profile"}
-            </span>
-
-            <span
-              className="logout-link"
-              onClick={() => {
-                logoutUser();
-                navigate("/");
-              }}
-            >
-              Logout
-            </span>
-
-          </div>
+  <button
+    className="logout-btn"
+    onClick={() => {
+      logoutUser();
+      navigate("/");
+    }}
+  >
+    Logout
+  </button>
+</div>
         )}
       </div>
     </nav>
