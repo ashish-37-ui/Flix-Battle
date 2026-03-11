@@ -12,7 +12,12 @@ function LiveActivity() {
       const data = await res.json();
 
       if (data.success) {
-        setActivity(data.activity);
+        setActivity((prev) => {
+  if (JSON.stringify(prev) === JSON.stringify(data.activity)) {
+    return prev;
+  }
+  return data.activity;
+});
       }
     } catch {
       console.error("Failed to load activity");
@@ -48,28 +53,51 @@ function LiveActivity() {
       <h2>🔥 Live Activity</h2>
 
       <div className="activity-list">
-        {activity.map((a) => (
-          <div
-            key={a._id}
-            className="activity-item"
-            onClick={() => navigate(`/battle?battleId=${a.battleId}`)}
-          >
-            <div className="activity-text">
-              <span className="activity-line">
-                {a.type === "battle" && "🆕 "}
-                {a.type === "vote" && "🗳 "}
-                {a.type === "opinion" && "💬 "}
-                {a.type === "reply" && "↩ "}
-                {a.type === "like" && "❤️ "}
+        {activity.map((a, index) => (
+          
+<div
+  key={a._id}
+  className="activity-card"
+  onClick={() => navigate(`/battle?battleId=${a.battleId}`)}
+  style={{ animationDelay: `${index * 0.08}s` }}
+>
+  <div className="activity-left">
 
-                <strong>{a.username}</strong>
-              </span>
+    <div className="activity-icon">
+      {a.type === "battle" && "🆕"}
+      {a.type === "vote" && "🗳"}
+      {a.type === "opinion" && "💬"}
+      {a.type === "reply" && "↩"}
+      {a.type === "like" && "❤️"}
+    </div>
 
-              <div className="activity-battle">{a.battleTitle}</div>
-            </div>
+    <div className="activity-content">
 
-            <div className="activity-time">{timeAgo(a.createdAt)}</div>
-          </div>
+      <div className="activity-action">
+        <strong>{a.username}</strong>
+
+        {a.type === "battle" && " created a battle"}
+        {a.type === "vote" && " voted"}
+        {a.type === "opinion" && " posted an opinion"}
+        {a.type === "reply" && " replied"}
+        {a.type === "like" && " liked an opinion"}
+      </div>
+
+      <div className="activity-battle">
+        {a.battleTitle}
+      </div>
+
+    </div>
+
+  </div>
+
+  <div className="activity-time">
+    {timeAgo(a.createdAt)}
+  </div>
+
+</div>
+
+
         ))}
       </div>
     </section>

@@ -101,6 +101,7 @@ function Battle() {
           body: JSON.stringify({
             option,
             userId: currentUser.id,
+            username: currentUser.username
           }),
         },
       );
@@ -140,6 +141,7 @@ function Battle() {
             userId: currentUser.id,
             option: userVote,
             text: opinionText,
+             username: currentUser.username 
           }),
         },
       );
@@ -181,7 +183,7 @@ function Battle() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: currentUser.id }),
+          body: JSON.stringify({ userId: currentUser.id,  username: currentUser.username  }),
         },
       );
 
@@ -264,6 +266,7 @@ function Battle() {
           body: JSON.stringify({
             userId: currentUser.id,
             text: text,
+             username: currentUser.username 
           }),
         },
       );

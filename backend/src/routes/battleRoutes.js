@@ -41,21 +41,17 @@ router.get("/", async (req, res) => {
     const now = new Date();
 
     const enhancedBattles = battles.map((battle) => {
-      const votesA = battle.votes.filter(v => v.option === "A").length;
-      const votesB = battle.votes.filter(v => v.option === "B").length;
+      const votesA = battle.votes.filter((v) => v.option === "A").length;
+      const votesB = battle.votes.filter((v) => v.option === "B").length;
       const totalVotes = votesA + votesB;
 
       const opinionCount = battle.opinions.length;
 
-      const hoursOld =
-        (now - new Date(battle.createdAt)) / (1000 * 60 * 60);
+      const hoursOld = (now - new Date(battle.createdAt)) / (1000 * 60 * 60);
 
       const freshnessBoost = Math.max(24 - hoursOld, 0);
 
-      const trendingScore =
-        (totalVotes * 2) +
-        (opinionCount * 3) +
-        freshnessBoost;
+      const trendingScore = totalVotes * 2 + opinionCount * 3 + freshnessBoost;
 
       return {
         _id: battle._id,
@@ -68,7 +64,6 @@ router.get("/", async (req, res) => {
         trendingScore,
         opinionCount,
         isFeatured: battle.isFeatured,
-        
       };
     });
 
@@ -79,7 +74,6 @@ router.get("/", async (req, res) => {
       success: true,
       battles: enhancedBattles,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -242,22 +236,22 @@ router.post("/:id/vote", async (req, res) => {
     });
 
     battle.votes.push({ userId, option });
-  if (battle.createdBy !== userId) {
-  await Notification.create({
-    userId: battle.createdBy,
-    message: `${userId} voted on your battle`,
-    link: `/battle?battleId=${battle._id}`,
-  });
-}
+    if (battle.createdBy !== userId) {
+      await Notification.create({
+        userId: battle.createdBy,
+        message: `${userId} voted on your battle`,
+        link: `/battle?battleId=${battle._id}`,
+      });
+    }
     await battle.save();
 
     await Activity.create({
-  type: "vote",
-  userId,
-  username,
-  battleId: battle._id,
-  battleTitle: battle.title
-});
+      type: "vote",
+      userId,
+      username,
+      battleId: battle._id,
+      battleTitle: battle.title,
+    });
 
     if (!user.votedBattles.includes(battle._id)) {
       user.votedBattles.push(battle._id);
@@ -279,7 +273,6 @@ router.post("/:id/vote", async (req, res) => {
     });
   }
 });
-
 
 /**
  * POST /api/battles/:id/opinion
@@ -376,7 +369,7 @@ router.post("/:id/save", async (req, res) => {
     const battleIdStr = battle._id.toString();
 
     const index = user.savedBattles.findIndex(
-      (id) => id.toString() === battleIdStr
+      (id) => id.toString() === battleIdStr,
     );
 
     let saved;
@@ -406,13 +399,12 @@ router.post("/:id/save", async (req, res) => {
   }
 });
 
-
 /**
  * POST /api/battles/:id/opinion
  * Submit opinion (one per user)
  */
 router.post("/:id/opinion", async (req, res) => {
-  const { userId, option, text } = req.body;
+  const { userId, option, text, username } = req.body;
 
   if (!userId || !option || !text) {
     return res.status(400).json({
@@ -439,9 +431,7 @@ router.post("/:id/opinion", async (req, res) => {
     }
 
     // ❌ Only one opinion per user
-    const alreadyPosted = battle.opinions.find(
-      (op) => op.userId === userId
-    );
+    const alreadyPosted = battle.opinions.find((op) => op.userId === userId);
 
     if (alreadyPosted) {
       return res.status(400).json({
@@ -457,10 +447,18 @@ router.post("/:id/opinion", async (req, res) => {
       option,
       text,
       likes: [],
-       replies: [],
+      replies: [],
     });
 
     await battle.save();
+
+    await Activity.create({
+      type: "opinion",
+      userId,
+      username,
+      battleId: battle._id,
+      battleTitle: battle.title,
+    });
 
     res.json({
       success: true,
@@ -479,7 +477,7 @@ router.post("/:id/opinion", async (req, res) => {
  * POST /api/battles/:id/opinion/:opinionId/like
  */
 router.post("/:id/opinion/:opinionId/like", async (req, res) => {
-  const { userId } = req.body;
+  const { userId, username } = req.body;
 
   try {
     const battle = await Battle.findById(req.params.id);
@@ -496,14 +494,22 @@ router.post("/:id/opinion/:opinionId/like", async (req, res) => {
     }
 
     opinion.likes.push(userId);
-   if (opinion.userId !== userId) {
-  await Notification.create({
-    userId: opinion.userId,
-    message: `${userId} liked your opinion`,
-    link: `/battle?battleId=${battle._id}`,
-  });
-}
+    if (opinion.userId !== userId) {
+      await Notification.create({
+        userId: opinion.userId,
+        message: `${userId} liked your opinion`,
+        link: `/battle?battleId=${battle._id}`,
+      });
+    }
     await battle.save();
+
+    await Activity.create({
+      type: "like",
+      userId,
+      username,
+      battleId: battle._id,
+      battleTitle: battle.title,
+    });
 
     res.json({
       success: true,
@@ -524,7 +530,7 @@ router.post("/feature/:id", async (req, res) => {
     const battle = await Battle.findByIdAndUpdate(
       req.params.id,
       { isFeatured: true },
-      { new: true }
+      { new: true },
     );
 
     if (!battle) {
@@ -547,12 +553,12 @@ router.post("/feature/:id", async (req, res) => {
 });
 
 router.post("/:id/opinion/:opinionId/reply", async (req, res) => {
-  const { userId, text } = req.body;
+  const { userId, text, username } = req.body;
 
   if (!userId || !text) {
     return res.status(400).json({
       success: false,
-      message: "Missing reply data"
+      message: "Missing reply data",
     });
   }
 
@@ -562,50 +568,57 @@ router.post("/:id/opinion/:opinionId/reply", async (req, res) => {
     if (!battle) {
       return res.status(404).json({
         success: false,
-        message: "Battle not found"
+        message: "Battle not found",
       });
     }
 
     const opinion = battle.opinions.find(
-      op => op.id === req.params.opinionId
+      (op) => op.id === req.params.opinionId,
     );
 
     if (!opinion) {
       return res.status(404).json({
         success: false,
-        message: "Opinion not found"
+        message: "Opinion not found",
       });
     }
 
     if (!opinion.replies) {
-  opinion.replies = [];
-}
+      opinion.replies = [];
+    }
 
     opinion.replies.push({
       id: Date.now().toString(),
       userId,
-      text
+      text,
     });
 
-   if (opinion.userId !== userId) {
-  await Notification.create({
-    userId: opinion.userId,
-    message: `${userId} replied to your opinion`,
-    link: `/battle?battleId=${battle._id}`,
-  });
-}
+    if (opinion.userId !== userId) {
+      await Notification.create({
+        userId: opinion.userId,
+        message: `${userId} replied to your opinion`,
+        link: `/battle?battleId=${battle._id}`,
+      });
+    }
 
     await battle.save();
 
-    res.json({
-      success: true,
-      opinions: battle.opinions
+    await Activity.create({
+      type: "reply",
+      userId,
+      username,
+      battleId: battle._id,
+      battleTitle: battle.title,
     });
 
+    res.json({
+      success: true,
+      opinions: battle.opinions,
+    });
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: "Reply failed"
+      message: "Reply failed",
     });
   }
 });
