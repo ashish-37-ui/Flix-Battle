@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../utils/auth";
 import { useRef } from "react";
+import LiveActivity from "../components/LiveActivity";
 
 //import Skeleton from "../components/Skeleton";
 
@@ -280,6 +281,8 @@ fetchLeaderboard();
           Create a Battle ✨
         </button>
       </section>
+
+      <LiveActivity />
 
       {/* 🔥 POPULAR */}
       <section className="popular-battles">

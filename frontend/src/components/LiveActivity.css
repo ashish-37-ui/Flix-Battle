@@ -1,0 +1,65 @@
+.live-activity {
+  margin: 40px auto;
+  max-width: 900px;
+}
+
+.live-activity h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* Activity container */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Each activity card */
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 14px 16px;
+
+  background: rgba(255,255,255,0.03);
+  border-radius: 10px;
+
+  border: 1px solid rgba(255,255,255,0.06);
+
+  transition: all 0.2s ease;
+
+  cursor: pointer;
+}
+
+.activity-item:hover {
+  background: rgba(255,255,255,0.07);
+  transform: translateY(-2px);
+}
+
+/* Left side text */
+.activity-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  font-size: 14px;
+}
+
+/* Username highlight */
+.activity-text strong {
+  color: #ffffff;
+}
+
+/* Battle title */
+.activity-battle {
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+/* Right side time */
+.activity-time {
+  font-size: 12px;
+  opacity: 0.6;
+}

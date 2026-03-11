@@ -6,6 +6,7 @@ const Battle = require("../models/Battle");
 const User = require("../models/User");
 const getOrCreateUser = require("../utils/getOrCreateUser");
 const Notification = require("../models/Notification");
+const Activity = require("../models/Activity");
 
 /**
  * GET /api/battles
@@ -250,6 +251,14 @@ router.post("/:id/vote", async (req, res) => {
 }
     await battle.save();
 
+    await Activity.create({
+  type: "vote",
+  userId,
+  username,
+  battleId: battle._id,
+  battleTitle: battle.title
+});
+
     if (!user.votedBattles.includes(battle._id)) {
       user.votedBattles.push(battle._id);
       await user.save();
@@ -270,6 +279,7 @@ router.post("/:id/vote", async (req, res) => {
     });
   }
 });
+
 
 /**
  * POST /api/battles/:id/opinion
