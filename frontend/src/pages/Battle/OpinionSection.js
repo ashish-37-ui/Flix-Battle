@@ -1,4 +1,4 @@
-
+import { useState } from "react";
 import "./OpinionSection.css";
 
 function OpinionSection({
@@ -15,22 +15,37 @@ function OpinionSection({
   topOpinion,
   replyText,
   setReplyText,
-  submitReply
+  submitReply,
 }) {
+  const [sortType, setSortType] = useState("top");
 
   // remove the top opinion from the list so it doesn't show twice
   const otherOpinions = topOpinion
     ? opinions.filter((op) => op.id !== topOpinion.id)
     : opinions;
 
+  const sortedOpinions = [...opinions].sort((a, b) => {
+    if (sortType === "top") {
+      return (b.likes?.length || 0) - (a.likes?.length || 0);
+    }
+
+    if (sortType === "new") {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    }
+
+    if (sortType === "liked") {
+      return (b.likes?.length || 0) - (a.likes?.length || 0);
+    }
+
+    return 0;
+  });
+
   return (
     <>
       <div className="opinions-wrapper">
-
         {/* 🔥 TOP OPINION */}
         {topOpinion && (
           <div className="opinion-card top-opinion">
-
             <div className="top-opinion-header">🔥 Top Opinion</div>
 
             <p className="opinion-text">{topOpinion.text}</p>
@@ -68,16 +83,13 @@ function OpinionSection({
                 onChange={(e) =>
                   setReplyText((prev) => ({
                     ...prev,
-                    [topOpinion.id]: e.target.value
+                    [topOpinion.id]: e.target.value,
                   }))
                 }
               />
 
-              <button onClick={() => submitReply(topOpinion.id)}>
-                Reply
-              </button>
+              <button onClick={() => submitReply(topOpinion.id)}>Reply</button>
             </div>
-
           </div>
         )}
 
@@ -89,7 +101,6 @@ function OpinionSection({
         {/* ✍️ Write opinion */}
         {hasVoted && userId && (
           <div className="opinion-card write-card">
-
             <h3 className="opinion-title">💬 Why did you choose this?</h3>
 
             <textarea
@@ -112,7 +123,6 @@ function OpinionSection({
 
               <span className="char-hint">{opinionText.length}/200</span>
             </div>
-
           </div>
         )}
 
@@ -130,16 +140,12 @@ function OpinionSection({
         {/* 💬 COMMUNITY OPINIONS */}
         {showOpinions && (
           <div className="opinions-panel">
-
             <div className="opinions-header">💬 Community Opinions</div>
 
             <div className="opinions-list">
-              {otherOpinions.map((op) => (
+              {sortedOpinions.map((op) => (
                 <div key={op.id} className="opinion-item">
-
-                  <div className="opinion-badge">
-                    Picked {op.option}
-                  </div>
+                  <div className="opinion-badge">Picked {op.option}</div>
 
                   <p className="opinion-text">{op.text}</p>
 
@@ -176,27 +182,44 @@ function OpinionSection({
                       onChange={(e) =>
                         setReplyText((prev) => ({
                           ...prev,
-                          [op.id]: e.target.value
+                          [op.id]: e.target.value,
                         }))
                       }
                     />
 
-                    <button onClick={() => submitReply(op.id)}>
-                      Reply
-                    </button>
+                    <button onClick={() => submitReply(op.id)}>Reply</button>
                   </div>
-
                 </div>
               ))}
             </div>
-
           </div>
         )}
 
+        <div className="opinion-sort">
+          <span
+            className={sortType === "top" ? "active" : ""}
+            onClick={() => setSortType("top")}
+          >
+            🔥 Top
+          </span>
+
+          <span
+            className={sortType === "new" ? "active" : ""}
+            onClick={() => setSortType("new")}
+          >
+            🆕 Newest
+          </span>
+
+          <span
+            className={sortType === "liked" ? "active" : ""}
+            onClick={() => setSortType("liked")}
+          >
+            👍 Most liked
+          </span>
+        </div>
       </div>
     </>
   );
 }
 
 export default OpinionSection;
-

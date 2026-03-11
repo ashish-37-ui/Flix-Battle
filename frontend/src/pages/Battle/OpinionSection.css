@@ -175,6 +175,23 @@
   margin-bottom: 4px;
 }
 
+.opinion-sort {
+  display: flex;
+  gap: 14px;
+  font-size: 13px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.opinion-sort span {
+  opacity: 0.6;
+}
+
+.opinion-sort span.active {
+  opacity: 1;
+  font-weight: 600;
+}
+
 @keyframes fadeInSoft {
   from {
     opacity: 0;
