@@ -9,7 +9,7 @@ import BattleHeader from "./BattleHeader";
 import VoteSection from "./VoteSection";
 import ResultsSection from "./ResultsSection";
 import OpinionSection from "./OpinionSection";
- 
+
 function Battle() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -43,35 +43,34 @@ function Battle() {
       return;
     }
 
-   const fetchBattle = async () => {
-  try {
-    const res = await fetch(
-      `http://localhost:5000/api/battles/${battleId}?userId=${userId}`
-    );
-    const data = await res.json();
+    const fetchBattle = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/battles/${battleId}?userId=${userId}`,
+        );
+        const data = await res.json();
 
-    if (!data.success) {
-      setError(data.message);
-      return;
-    }
+        if (!data.success) {
+          setError(data.message);
+          return;
+        }
 
-    setBattle({
-      ...data.battle,
-      votesA: data.votes.A,
-      votesB: data.votes.B,
-    });
+        setBattle({
+          ...data.battle,
+          votesA: data.votes.A,
+          votesB: data.votes.B,
+        });
 
-    setHasVoted(!!data.userVote);
-    setUserVote(data.userVote);
-    setIsSaved(data.isSaved); // ✅ ONLY THIS
-  } catch (err) {
-    console.error(err);
-    setError("Failed to load battle");
-  } finally {
-    setLoading(false);
-  }
-};
-
+        setHasVoted(!!data.userVote);
+        setUserVote(data.userVote);
+        setIsSaved(data.isSaved); // ✅ ONLY THIS
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load battle");
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchBattle();
   }, [battleId, userId]);
@@ -212,81 +211,80 @@ function Battle() {
     }
   };
 
-const toggleSaveBattle = async () => {
-  if (!currentUser) {
-    navigate("/login", { state: { from: location.pathname + location.search } });
-    return;
-  }
-
-  const res = await fetch(
-    `http://localhost:5000/api/battles/${battle._id}/save`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: currentUser.id,
-        username: currentUser.username,
-      }),
+  const toggleSaveBattle = async () => {
+    if (!currentUser) {
+      navigate("/login", {
+        state: { from: location.pathname + location.search },
+      });
+      return;
     }
-  );
 
-  const data = await res.json();
-
-  if (data.success) {
-    setIsSaved(data.saved); // 🔥 SOURCE OF TRUTH
-    showFeedback(
-      data.saved ? "⭐ Battle saved" : "❌ Removed from saved",
-      "success"
+    const res = await fetch(
+      `http://localhost:5000/api/battles/${battle._id}/save`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          username: currentUser.username,
+        }),
+      },
     );
-  }
-};
 
+    const data = await res.json();
+
+    if (data.success) {
+      setIsSaved(data.saved); // 🔥 SOURCE OF TRUTH
+      showFeedback(
+        data.saved ? "⭐ Battle saved" : "❌ Removed from saved",
+        "success",
+      );
+    }
+  };
 
   const showFeedback = (message, type = "success") => {
     setFeedback({ message, type });
     setTimeout(() => setFeedback(null), 3000);
   };
 
- const submitReply = async (opinionId) => {
+  const submitReply = async (opinionId) => {
+    console.log("Replying to opinion:", opinionId);
+    const text = replyText[opinionId];
 
-  console.log("Replying to opinion:", opinionId);
-  const text = replyText[opinionId];
+    if (!text || !text.trim()) return;
 
-  if (!text || !text.trim()) return;
-
-  try {
-    const res = await fetch(
-      `http://localhost:5000/api/battles/${battle._id}/opinion/${opinionId}/reply`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/battles/${battle._id}/opinion/${opinionId}/reply`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: currentUser.id,
+            text: text,
+          }),
         },
-        body: JSON.stringify({
-          userId: currentUser.id,
-          text: text
-        }),
-      }
-    );
+      );
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!data.success) return;
+      if (!data.success) return;
 
-    setBattle((prev) => ({
-      ...prev,
-      opinions: data.opinions,
-    }));
+      setBattle((prev) => ({
+        ...prev,
+        opinions: data.opinions,
+      }));
 
-    setReplyText((prev) => ({
-      ...prev,
-      [opinionId]: "",
-    }));
-
-  } catch (err) {
-    console.error("Reply failed", err);
-  }
-};
+      setReplyText((prev) => ({
+        ...prev,
+        [opinionId]: "",
+      }));
+    } catch (err) {
+      console.error("Reply failed", err);
+    }
+  };
 
   const opinions = battle?.opinions || [];
 
@@ -336,18 +334,34 @@ const toggleSaveBattle = async () => {
 
   const totalVotes = battle.votesA + battle.votesB;
 
+  const totalOpinions = battle.opinions?.length || 0;
+
+const totalReplies =
+  battle.opinions?.reduce(
+    (sum, op) => sum + (op.replies?.length || 0),
+    0
+  ) || 0;
+
+const leadingOption =
+  battle.votesA > battle.votesB
+    ? battle.optionA
+    : battle.votesB > battle.votesA
+    ? battle.optionB
+    : "Tie";
+
+
   const voteDifference = Math.abs(battle.votesA - battle.votesB);
-const engagementScore = totalVotes + (battle.opinions?.length || 0) * 2;
+  const engagementScore = totalVotes + (battle.opinions?.length || 0) * 2;
 
-let momentumLabel = "😐 Stable";
+  let momentumLabel = "😐 Stable";
 
-if (engagementScore > 20 && voteDifference < totalVotes * 0.2) {
-  momentumLabel = "🔥 Heated Debate";
-} else if (engagementScore > 10) {
-  momentumLabel = "⚡ Active";
-} else if (engagementScore < 5) {
-  momentumLabel = "❄️ Cooling Down";
-}
+  if (engagementScore > 20 && voteDifference < totalVotes * 0.2) {
+    momentumLabel = "🔥 Heated Debate";
+  } else if (engagementScore > 10) {
+    momentumLabel = "⚡ Active";
+  } else if (engagementScore < 5) {
+    momentumLabel = "❄️ Cooling Down";
+  }
 
   return (
     <div className="battle-page">
@@ -421,7 +435,42 @@ if (engagementScore > 20 && voteDifference < totalVotes * 0.2) {
         }
       />
 
-      <div className="momentum-meter"><span>{momentumLabel}</span></div>
+    
+<div className="battle-stats">
+
+  <h3>📊 Battle Stats</h3>
+
+  <div className="stats-grid">
+
+    <div className="stat-box">
+      <span className="stat-number">{totalVotes}</span>
+      <span className="stat-label">Votes</span>
+    </div>
+
+    <div className="stat-box">
+      <span className="stat-number">{totalOpinions}</span>
+      <span className="stat-label">Opinions</span>
+    </div>
+
+    <div className="stat-box">
+      <span className="stat-number">{totalReplies}</span>
+      <span className="stat-label">Replies</span>
+    </div>
+
+    <div className="stat-box">
+      <span className="stat-number">{leadingOption}</span>
+      <span className="stat-label">Leading</span>
+    </div>
+
+  </div>
+
+</div>
+
+
+
+      <div className="momentum-meter">
+        <span>{momentumLabel}</span>
+      </div>
 
       {hasVoted && battle.opinions.length === 0 && (
         <p className="empty-state">
@@ -441,8 +490,8 @@ if (engagementScore > 20 && voteDifference < totalVotes * 0.2) {
         hasVoted={hasVoted}
         opinionText={opinionText}
         replyText={replyText}
-setReplyText={setReplyText}
-submitReply={submitReply}
+        setReplyText={setReplyText}
+        submitReply={submitReply}
         setOpinionText={setOpinionText}
         onSubmit={submitOpinion}
         topOpinion={topOpinion}
