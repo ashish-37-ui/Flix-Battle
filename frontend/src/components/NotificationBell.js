@@ -1,8 +1,25 @@
-
 import { useEffect, useState, useRef } from "react";
 import { getCurrentUser } from "../utils/auth";
 import { useNavigate } from "react-router-dom";
 import "./NotificationBell.css";
+
+
+function timeAgo(date) {
+  const seconds = Math.floor((Date.now() - new Date(date)) / 1000);
+
+  if (seconds < 60) return "just now";
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return minutes + "m ago";
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours + "h ago";
+
+  const days = Math.floor(hours / 24);
+  return days + "d ago";
+}
+
+
 
 function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
@@ -19,7 +36,7 @@ function NotificationBell() {
     const fetchNotifications = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/notifications/${encodeURIComponent(currentUser.id)}`
+          `http://localhost:5000/api/notifications/${encodeURIComponent(currentUser.id)}`,
         );
 
         const data = await res.json();
@@ -56,7 +73,7 @@ function NotificationBell() {
     try {
       await fetch(
         `http://localhost:5000/api/notifications/${notification._id}/read`,
-        { method: "POST" }
+        { method: "POST" },
       );
 
       navigate(notification.link);
@@ -71,38 +88,29 @@ function NotificationBell() {
 
   return (
     <div className="notification-wrapper" ref={bellRef}>
-      <div
-        className="notification-bell"
-        onClick={() => setOpen(!open)}
-      >
+      <div className="notification-bell" onClick={() => setOpen(!open)}>
         🔔
         {unreadCount > 0 && (
-          <span className="notification-count">
-            {unreadCount}
-          </span>
+          <span className="notification-count">{unreadCount}</span>
         )}
       </div>
 
       {open && (
         <div className="notification-dropdown">
-          <div className="notification-title">
-            Notifications
-          </div>
+          <div className="notification-title">Notifications</div>
 
           {notifications.length === 0 ? (
-            <p className="empty-notifications">
-              No notifications yet
-            </p>
+            <p className="empty-notifications">No notifications yet</p>
           ) : (
             notifications.map((n) => (
               <div
                 key={n._id}
-                className={`notification-item ${
-                  n.read ? "" : "unread"
-                }`}
+                className={`notification-item ${n.read ? "" : "unread"}`}
                 onClick={() => openNotification(n)}
               >
-                {n.message}
+                <div className="notification-text">{n.message}</div>
+
+                <div className="notification-time">{timeAgo(n.createdAt)}</div>
               </div>
             ))
           )}
@@ -113,4 +121,3 @@ function NotificationBell() {
 }
 
 export default NotificationBell;
-

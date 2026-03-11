@@ -24,41 +24,57 @@
 .notification-dropdown {
    backdrop-filter: blur(10px);
 
-  background: rgba(18, 28, 50, 0.9);
+  background: #111;
 
   border: 1px solid rgba(255,255,255,0.06);
   position: absolute;
   right: 0;
-  top: 35px;
-  width: 280px;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  top: 42px;
+  width: 300px;
+   max-height: 400px;
+   padding: 10px;
+
+  overflow-y: auto;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   z-index: 100;
 }
 
 .notification-title {
   padding: 10px;
   font-weight: bold;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  
 }
 
 .notification-item {
   padding: 10px;
   cursor: pointer;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
 }
 
 .notification-item:hover {
-  background: #2a2a2a;
+  background: rgba(255,255,255,0.06);
 }
 
 .notification-item.unread {
-  background: rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.08);
 }
 
 .empty-notifications {
   padding: 10px;
   opacity: 0.7;
+}
+
+.notification-text {
+  font-size: 14px;
+}
+
+.notification-time {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-top: 3px;
 }
 
 .notification-dropdown {
