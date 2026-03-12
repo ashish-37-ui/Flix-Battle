@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import "./OpinionSection.css";
 
@@ -17,14 +18,15 @@ function OpinionSection({
   setReplyText,
   submitReply,
 }) {
+
   const [sortType, setSortType] = useState("top");
 
-  // remove the top opinion from the list so it doesn't show twice
   const otherOpinions = topOpinion
     ? opinions.filter((op) => op.id !== topOpinion.id)
     : opinions;
 
-  const sortedOpinions = [...opinions].sort((a, b) => {
+  const sortedOpinions = [...otherOpinions].sort((a, b) => {
+
     if (sortType === "top") {
       return (b.likes?.length || 0) - (a.likes?.length || 0);
     }
@@ -38,188 +40,264 @@ function OpinionSection({
     }
 
     return 0;
+
   });
 
   return (
-    <>
-      <div className="opinions-wrapper">
-        {/* 🔥 TOP OPINION */}
-        {topOpinion && (
-          <div className="opinion-card top-opinion">
-            <div className="top-opinion-header">🔥 Top Opinion</div>
+    <div className="opinions-wrapper">
 
-            <p className="opinion-text">{topOpinion.text}</p>
+      {/* 🔥 TOP OPINION */}
+      {topOpinion && (
+        <div className="opinion-card top-opinion">
 
-            <div className="opinion-meta">
-              <span>👍 {(topOpinion.likes || []).length}</span>
+          <div className="top-opinion-header">
+            🔥 Top Opinion
+          </div>
 
-              {topOpinion.userId !== userId &&
-                !(topOpinion.likes || []).includes(userId) && (
-                  <button
-                    className="like-btn"
-                    onClick={() => likeOpinion(topOpinion.id)}
-                  >
-                    Like
-                  </button>
-                )}
+          <div className="opinion-header">
+
+            <div className="avatar">👤</div>
+
+            <div className="user-info">
+              <strong>{topOpinion.userId}</strong>
+              <span className="picked-option">
+                picked {topOpinion.option}
+              </span>
             </div>
 
-            {/* Replies */}
-            {topOpinion.replies && topOpinion.replies.length > 0 && (
-              <div className="replies">
-                {topOpinion.replies.map((reply) => (
-                  <div key={reply.id} className="reply">
-                    <strong>{reply.userId}</strong> {reply.text}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Reply box */}
-            <div className="reply-box">
-              <input
-                placeholder="Write a reply..."
-                value={replyText?.[topOpinion.id] || ""}
-                onChange={(e) =>
-                  setReplyText((prev) => ({
-                    ...prev,
-                    [topOpinion.id]: e.target.value,
-                  }))
-                }
-              />
-
-              <button onClick={() => submitReply(topOpinion.id)}>Reply</button>
-            </div>
           </div>
-        )}
 
-        {/* 🔒 Not logged in */}
-        {hasVoted && !userId && (
-          <p className="empty-state">🔒 Login to share your opinion.</p>
-        )}
-
-        {/* ✍️ Write opinion */}
-        {hasVoted && userId && (
-          <div className="opinion-card write-card">
-            <h3 className="opinion-title">💬 Why did you choose this?</h3>
-
-            <textarea
-              value={opinionText}
-              onChange={(e) => setOpinionText(e.target.value)}
-              rows={3}
-              placeholder="Share your reasoning in a line or two…"
-              className="opinion-input"
-              maxLength={200}
-            />
-
-            <div className="opinion-actions">
-              <button
-                onClick={onSubmit}
-                className="primary-btn"
-                disabled={!opinionText.trim()}
-              >
-                Post Opinion
-              </button>
-
-              <span className="char-hint">{opinionText.length}/200</span>
-            </div>
+          <div className="opinion-body">
+            {topOpinion.text}
           </div>
-        )}
 
-        {/* 👀 Toggle opinions */}
-        {otherOpinions.length > 0 && (
-          <div className="opinions-toggle">
-            <button onClick={toggleOpinions}>
-              {showOpinions
-                ? "⬆ Hide community opinions"
-                : `⬇ View community opinions (${otherOpinions.length})`}
-            </button>
+          <div className="opinion-actions">
+
+            <span>👍 {(topOpinion.likes || []).length}</span>
+
+            {topOpinion.userId !== userId &&
+              !(topOpinion.likes || []).includes(userId) && (
+                <button
+                  className="like-btn"
+                  onClick={() => likeOpinion(topOpinion.id)}
+                >
+                  Like
+                </button>
+              )}
+
           </div>
-        )}
 
-        {/* 💬 COMMUNITY OPINIONS */}
-        {showOpinions && (
-          <div className="opinions-panel">
-            <div className="opinions-header">💬 Community Opinions</div>
+          {/* Replies */}
+          {topOpinion.replies && topOpinion.replies.length > 0 && (
+            <div className="reply-list">
 
-            <div className="opinions-list">
-              {sortedOpinions.map((op) => (
-                <div key={op.id} className="opinion-item">
-                  <div className="opinion-badge">Picked {op.option}</div>
+              {topOpinion.replies.map((reply) => (
+                <div key={reply.id} className="reply-item">
 
-                  <p className="opinion-text">{op.text}</p>
+                  <div className="avatar small">👤</div>
 
-                  <div className="opinion-meta">
-                    <span>👍 {(op.likes || []).length}</span>
-
-                    {op.userId !== userId &&
-                      !(op.likes || []).includes(userId) && (
-                        <button
-                          className="like-btn"
-                          onClick={() => likeOpinion(op.id)}
-                        >
-                          Like
-                        </button>
-                      )}
+                  <div className="reply-content">
+                    <strong>{reply.userId}</strong>
+                    <p>{reply.text}</p>
                   </div>
 
-                  {/* Replies */}
-                  {op.replies && op.replies.length > 0 && (
-                    <div className="replies">
-                      {op.replies.map((reply) => (
-                        <div key={reply.id} className="reply">
-                          <strong>{reply.userId}</strong> {reply.text}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Reply input */}
-                  <div className="reply-box">
-                    <input
-                      placeholder="Write a reply..."
-                      value={replyText?.[op.id] || ""}
-                      onChange={(e) =>
-                        setReplyText((prev) => ({
-                          ...prev,
-                          [op.id]: e.target.value,
-                        }))
-                      }
-                    />
-
-                    <button onClick={() => submitReply(op.id)}>Reply</button>
-                  </div>
                 </div>
               ))}
+
             </div>
+          )}
+
+          {/* Reply box */}
+          <div className="reply-box">
+            <input
+              placeholder="Write a reply..."
+              value={replyText?.[topOpinion.id] || ""}
+              onChange={(e) =>
+                setReplyText((prev) => ({
+                  ...prev,
+                  [topOpinion.id]: e.target.value,
+                }))
+              }
+            />
+
+            <button onClick={() => submitReply(topOpinion.id)}>
+              Reply
+            </button>
           </div>
-        )}
 
-        <div className="opinion-sort">
-          <span
-            className={sortType === "top" ? "active" : ""}
-            onClick={() => setSortType("top")}
-          >
-            🔥 Top
-          </span>
-
-          <span
-            className={sortType === "new" ? "active" : ""}
-            onClick={() => setSortType("new")}
-          >
-            🆕 Newest
-          </span>
-
-          <span
-            className={sortType === "liked" ? "active" : ""}
-            onClick={() => setSortType("liked")}
-          >
-            👍 Most liked
-          </span>
         </div>
+      )}
+
+      {/* WRITE OPINION */}
+      {hasVoted && userId && (
+        <div className="opinion-card write-card">
+
+          <h3 className="opinion-title">
+            💬 Share your reasoning
+          </h3>
+
+          <textarea
+            value={opinionText}
+            onChange={(e) => setOpinionText(e.target.value)}
+            rows={3}
+            placeholder="Why did you choose this option?"
+            className="opinion-input"
+            maxLength={200}
+          />
+
+          <div className="opinion-actions">
+
+            <button
+              onClick={onSubmit}
+              className="primary-btn"
+              disabled={!opinionText.trim()}
+            >
+              Post Opinion
+            </button>
+
+            <span className="char-hint">
+              {opinionText.length}/200
+            </span>
+
+          </div>
+
+        </div>
+      )}
+
+      {/* TOGGLE */}
+      {otherOpinions.length > 0 && (
+        <div className="opinions-toggle">
+
+          <button onClick={toggleOpinions}>
+            {showOpinions
+              ? "⬆ Hide community opinions"
+              : `⬇ View community opinions (${otherOpinions.length})`}
+          </button>
+
+        </div>
+      )}
+
+      {/* SORT */}
+      <div className="opinion-sort">
+
+        <span
+          className={sortType === "top" ? "active" : ""}
+          onClick={() => setSortType("top")}
+        >
+          🔥 Top
+        </span>
+
+        <span
+          className={sortType === "new" ? "active" : ""}
+          onClick={() => setSortType("new")}
+        >
+          🆕 Newest
+        </span>
+
+        <span
+          className={sortType === "liked" ? "active" : ""}
+          onClick={() => setSortType("liked")}
+        >
+          👍 Most liked
+        </span>
+
       </div>
-    </>
+
+      {/* COMMUNITY OPINIONS */}
+      {showOpinions && (
+
+        <div className="opinions-panel">
+
+          {sortedOpinions.map((op) => (
+
+            <div key={op.id} className="opinion-card">
+
+              <div className="opinion-header">
+
+                <div className="avatar">👤</div>
+
+                <div className="user-info">
+                  <strong>{op.userId}</strong>
+                  <span className="picked-option">
+                    picked {op.option}
+                  </span>
+                </div>
+
+              </div>
+
+              <div className="opinion-body">
+                {op.text}
+              </div>
+
+              <div className="opinion-actions">
+
+                <span>👍 {(op.likes || []).length}</span>
+
+                {op.userId !== userId &&
+                  !(op.likes || []).includes(userId) && (
+                    <button
+                      className="like-btn"
+                      onClick={() => likeOpinion(op.id)}
+                    >
+                      Like
+                    </button>
+                  )}
+
+              </div>
+
+              {/* Replies */}
+              {op.replies && op.replies.length > 0 && (
+
+                <div className="reply-list">
+
+                  {op.replies.map((reply) => (
+                    <div key={reply.id} className="reply-item">
+
+                      <div className="avatar small">👤</div>
+
+                      <div className="reply-content">
+                        <strong>{reply.userId}</strong>
+                        <p>{reply.text}</p>
+                      </div>
+
+                    </div>
+                  ))}
+
+                </div>
+
+              )}
+
+              {/* Reply input */}
+              <div className="reply-box">
+
+                <input
+                  placeholder="Write a reply..."
+                  value={replyText?.[op.id] || ""}
+                  onChange={(e) =>
+                    setReplyText((prev) => ({
+                      ...prev,
+                      [op.id]: e.target.value,
+                    }))
+                  }
+                />
+
+                <button onClick={() => submitReply(op.id)}>
+                  Reply
+                </button>
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      )}
+
+    </div>
   );
 }
 
 export default OpinionSection;
+
