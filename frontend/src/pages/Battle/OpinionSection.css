@@ -322,6 +322,17 @@
   font-weight: 600;
 }
 
+.reply-toggle {
+  margin-top: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.reply-toggle:hover {
+  opacity: 1;
+}
+
 @keyframes fadeInSoft {
   from {
     opacity: 0;
