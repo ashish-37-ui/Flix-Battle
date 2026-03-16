@@ -12,18 +12,18 @@
    transition: 0.2s ease;
   
   
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 18px;
 }
 
 .opinion-card:hover {
-  background: rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.06);
 }
 
 .opinion-header {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
 }
 
@@ -109,6 +109,41 @@
   background: rgba(255,255,255,0.07);
 }
 
+.avatar {
+
+  font-size: 20px;
+
+}
+
+.username {
+
+  font-weight: 600;
+  font-size: 14px;
+
+}
+
+.picked-option {
+
+  font-size: 12px;
+  opacity: 0.6;
+  margin-left: 15px;
+  
+
+}
+
+.opinion-footer {
+
+  margin-top: 12px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  font-size: 13px;
+
+}
+
+
 /* Header */
 .opinion-header {
   display: flex;
@@ -133,9 +168,9 @@
 
 /* Body */
 .opinion-body {
-  margin-top: 10px;
-  font-size: 14px;
-  line-height: 1.5;
+  margin-top: 12px;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 /* Actions */
@@ -147,7 +182,11 @@
 }
 
 .like-btn {
+   margin-left: 8px;
+  border: none;
+  background: transparent;
   cursor: pointer;
+  color: #6aa8ff;
 }
 
 .reply-action {
@@ -161,9 +200,9 @@
 
 /* Replies */
 .reply-list {
-  margin-top: 12px;
+  margin-top: 14px;
   padding-left: 30px;
-  border-left: 2px solid rgba(255,255,255,0.1);
+  border-left: 2px solid rgba(255,255,255,0.08);
 }
 
 .reply-item {
@@ -181,6 +220,36 @@
   font-size: 13px;
 }
 
+.reply-box {
+
+  margin-top: 14px;
+
+  display: flex;
+  gap: 10px;
+
+}
+
+.reply-box input {
+
+  flex: 1;
+  border-radius: 10px;
+  padding: 10px;
+  border: none;
+
+}
+
+.reply-box button {
+
+  padding: 8px 16px;
+  border-radius: 10px;
+
+  border: none;
+  background: #5a7cff;
+
+  color: white;
+
+}
+
 .char-hint {
   font-size: 12px;
   color: #777;
@@ -189,8 +258,8 @@
 /* Top opinion */
 .top-opinion {
   border-color: #22c55e;
-  border: 1px solid #6c8cff;
-   background: rgba(108,140,255,0.08);
+  border: 1px solid #ffb347;
+   background: rgba(108,140,255,0.06);
 }
 
 .top-opinion-header {

@@ -448,7 +448,7 @@ const leadingOption =
     <div className="stat-box">
       <span className="stat-number">{totalVotes}</span>
       <span className="stat-label">Votes</span>
-    </div>
+    </div> 
 
     <div className="stat-box">
       <span className="stat-number">{totalOpinions}</span>
