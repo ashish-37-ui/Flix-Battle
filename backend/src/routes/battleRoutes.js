@@ -19,6 +19,9 @@ const fetchPoster = require("../utils/fetchPoster");
  *  - category filter (?type=movies)
  *  - search (?q=interstellar)
  */
+
+
+
 router.get("/", async (req, res) => {
   try {
     const { type, q } = req.query;
@@ -41,47 +44,84 @@ router.get("/", async (req, res) => {
 
     const now = new Date();
 
-    const enhancedBattles = battles.map((battle) => {
-      const votesA = battle.votes.filter((v) => v.option === "A").length;
-      const votesB = battle.votes.filter((v) => v.option === "B").length;
-      const totalVotes = votesA + votesB;
+    // 🔥 HANDLE POSTERS + ENHANCE DATA
+    const enhancedBattles = await Promise.all(
+      battles.map(async (battle) => {
 
-      const opinionCount = battle.opinions.length;
+        let posterA = battle.posterA;
+        let posterB = battle.posterB;
 
-      const hoursOld = (now - new Date(battle.createdAt)) / (1000 * 60 * 60);
+        // 🎬 AUTO-FETCH POSTERS FOR OLD BATTLES
+        if ((!posterA || !posterB) && (battle.type === "movies" || battle.type === "tv")) {
+          try {
+            posterA = await fetchPoster(battle.optionA);
+            posterB = await fetchPoster(battle.optionB);
 
-      const freshnessBoost = Math.max(24 - hoursOld, 0);
+            battle.posterA = posterA;
+            battle.posterB = posterB;
 
-      const trendingScore = totalVotes * 2 + opinionCount * 3 + freshnessBoost;
+            await battle.save();
 
-      return {
-        _id: battle._id,
-        title: battle.title,
-        type: battle.type,
-        optionA: battle.optionA,
-        optionB: battle.optionB,
-        totalVotes,
-        createdAt: battle.createdAt,
-        trendingScore,
-        opinionCount,
-        isFeatured: battle.isFeatured,
-      };
-    });
+          } catch (err) {
+            console.log("Poster fetch failed for:", battle.title);
+          }
+        }
 
-    // 🔥 SORT BY SMART SCORE
+        const votesA = battle.votes.filter((v) => v.option === "A").length;
+        const votesB = battle.votes.filter((v) => v.option === "B").length;
+        const totalVotes = votesA + votesB;
+
+        const opinionCount = battle.opinions.length;
+
+        const hoursOld =
+          (now - new Date(battle.createdAt)) / (1000 * 60 * 60);
+
+        const freshnessBoost = Math.max(24 - hoursOld, 0);
+
+        const trendingScore =
+          totalVotes * 2 +
+          opinionCount * 3 +
+          freshnessBoost;
+
+        return {
+          _id: battle._id,
+          title: battle.title,
+          type: battle.type,
+          optionA: battle.optionA,
+          optionB: battle.optionB,
+
+          // 🎬 ADD POSTERS TO RESPONSE
+          posterA,
+          posterB,
+
+          totalVotes,
+          createdAt: battle.createdAt,
+          trendingScore,
+          opinionCount,
+          isFeatured: battle.isFeatured,
+        };
+      })
+    );
+
+    // 🔥 SORT BY TRENDING
     enhancedBattles.sort((a, b) => b.trendingScore - a.trendingScore);
 
     res.json({
       success: true,
       battles: enhancedBattles,
     });
+
   } catch (error) {
+    console.error("Fetch battles error:", error);
+
     res.status(500).json({
       success: false,
       message: "Failed to fetch battles",
     });
   }
 });
+
+
 
 /**
  * GET /api/battles/:id
