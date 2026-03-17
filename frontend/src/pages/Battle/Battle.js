@@ -417,6 +417,8 @@ const leadingOption =
       <VoteSection
         optionA={battle.optionA}
         optionB={battle.optionB}
+        posterA={battle.posterA}
+  posterB={battle.posterB}
         hasVoted={hasVoted}
         userVote={userVote}
         selectedOption={selectedOption}

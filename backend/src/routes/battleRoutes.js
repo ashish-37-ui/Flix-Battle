@@ -7,6 +7,7 @@ const User = require("../models/User");
 const getOrCreateUser = require("../utils/getOrCreateUser");
 const Notification = require("../models/Notification");
 const Activity = require("../models/Activity");
+const fetchPoster = require("../utils/fetchPoster");
 
 /**
  * GET /api/battles
@@ -155,12 +156,22 @@ router.post("/", async (req, res) => {
       });
     }
 
+     let posterA = null;
+    let posterB = null;
+
+    if (type === "movies" || type === "tv") {
+      posterA = await fetchPoster(optionA);
+      posterB = await fetchPoster(optionB);
+    }
+
     const battle = await Battle.create({
       title,
       type,
       optionA,
       optionB,
       createdBy,
+      posterA,
+      posterB,
       votes: [],
       opinions: [],
     });

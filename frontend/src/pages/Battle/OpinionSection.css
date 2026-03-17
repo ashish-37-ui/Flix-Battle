@@ -410,8 +410,8 @@
 }
 
 .reply-toggle {
-  /* margin-top: 10px;
-  font-size: 13px; */
+  margin-top: 10px;
+  font-size: 13px;
   cursor: pointer;
   opacity: 0.7;
 }

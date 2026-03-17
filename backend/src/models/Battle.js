@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 
 const BattleSchema = new mongoose.Schema(
@@ -32,6 +31,16 @@ const BattleSchema = new mongoose.Schema(
     isFeatured: {
       type: Boolean,
       default: false,
+    },
+
+    posterA: {
+      type: String,
+      default: null,
+    },
+
+    posterB: {
+      type: String,
+      default: null,
     },
 
     // 🗳️ VOTES (one per user)
@@ -112,8 +121,7 @@ const BattleSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Battle", BattleSchema);
-

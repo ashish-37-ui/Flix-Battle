@@ -20,6 +20,8 @@ function OpinionSection({
   const [sortType, setSortType] = useState("top");
   const [openReplies, setOpenReplies] = useState({});
 
+  
+
   const toggleReplies = (opinionId) => {
     setOpenReplies((prev) => ({
       ...prev,
