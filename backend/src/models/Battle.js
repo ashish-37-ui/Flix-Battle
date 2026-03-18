@@ -42,6 +42,10 @@ const BattleSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    posterFetched: {
+  type: Boolean,
+  default: false,
+},
 
     // 🗳️ VOTES (one per user)
     votes: [

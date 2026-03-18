@@ -20,8 +20,6 @@ const fetchPoster = require("../utils/fetchPoster");
  *  - search (?q=interstellar)
  */
 
-
-
 router.get("/", async (req, res) => {
   try {
     const { type, q } = req.query;
@@ -47,23 +45,22 @@ router.get("/", async (req, res) => {
     // 🔥 HANDLE POSTERS + ENHANCE DATA
     const enhancedBattles = await Promise.all(
       battles.map(async (battle) => {
-
         let posterA = battle.posterA;
         let posterB = battle.posterB;
 
         // 🎬 AUTO-FETCH POSTERS FOR OLD BATTLES
-        if ((!posterA || !posterB) && (battle.type === "movies" || battle.type === "tv")) {
+        if (!battle.posterFetched && (battle.type === "movies" || battle.type === "tv")) {
           try {
-            posterA = await fetchPoster(battle.optionA);
-            posterB = await fetchPoster(battle.optionB);
+            posterA = await fetchPoster(battle.optionA, battle.type);
+            posterB = await fetchPoster(battle.optionB, battle.type);
 
             battle.posterA = posterA;
             battle.posterB = posterB;
+            battle.posterFetched = true;
 
             await battle.save();
-
           } catch (err) {
-            console.log("Poster fetch failed for:", battle.title);
+            // Silent fall
           }
         }
 
@@ -73,15 +70,12 @@ router.get("/", async (req, res) => {
 
         const opinionCount = battle.opinions.length;
 
-        const hoursOld =
-          (now - new Date(battle.createdAt)) / (1000 * 60 * 60);
+        const hoursOld = (now - new Date(battle.createdAt)) / (1000 * 60 * 60);
 
         const freshnessBoost = Math.max(24 - hoursOld, 0);
 
         const trendingScore =
-          totalVotes * 2 +
-          opinionCount * 3 +
-          freshnessBoost;
+          totalVotes * 2 + opinionCount * 3 + freshnessBoost;
 
         return {
           _id: battle._id,
@@ -100,7 +94,7 @@ router.get("/", async (req, res) => {
           opinionCount,
           isFeatured: battle.isFeatured,
         };
-      })
+      }),
     );
 
     // 🔥 SORT BY TRENDING
@@ -110,7 +104,6 @@ router.get("/", async (req, res) => {
       success: true,
       battles: enhancedBattles,
     });
-
   } catch (error) {
     console.error("Fetch battles error:", error);
 
@@ -120,8 +113,6 @@ router.get("/", async (req, res) => {
     });
   }
 });
-
-
 
 /**
  * GET /api/battles/:id
@@ -147,6 +138,23 @@ router.get("/:id", async (req, res) => {
       });
     }
 
+    let posterA = battle.posterA;
+    let posterB = battle.posterB;
+
+    if (!posterA || !posterB) {
+      try {
+        posterA = await fetchPoster(battle.optionA, battle.type);
+        posterB = await fetchPoster(battle.optionB, battle.type);
+
+        battle.posterA = posterA;
+        battle.posterB = posterB;
+
+        await battle.save();
+      } catch (err) {
+        console.log("Poster fetch failed (single battle)");
+      }
+    }
+
     const votesA = battle.votes.filter((v) => v.option === "A").length;
     const votesB = battle.votes.filter((v) => v.option === "B").length;
 
@@ -168,7 +176,11 @@ router.get("/:id", async (req, res) => {
 
     res.json({
       success: true,
-      battle,
+      battle: {
+        ...battle.toObject(),
+        posterA,
+        posterB,
+      },
       votes: { A: votesA, B: votesB },
       userVote,
       isSaved, // ✅ SINGLE SOURCE OF TRUTH
@@ -196,12 +208,12 @@ router.post("/", async (req, res) => {
       });
     }
 
-     let posterA = null;
+    let posterA = null;
     let posterB = null;
 
     if (type === "movies" || type === "tv") {
-      posterA = await fetchPoster(optionA);
-      posterB = await fetchPoster(optionB);
+      posterA = await fetchPoster(optionA, type);
+      posterB = await fetchPoster(optionB, type);
     }
 
     const battle = await Battle.create({
@@ -641,6 +653,7 @@ router.post("/:id/opinion/:opinionId/reply", async (req, res) => {
     opinion.replies.push({
       id: Date.now().toString(),
       userId,
+      username: username || userId,
       text,
     });
 
