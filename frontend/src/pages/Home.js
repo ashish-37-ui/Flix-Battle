@@ -40,33 +40,31 @@ function Home() {
     fetchBattles();
   }, []);
 
-  
-useEffect(()=> {
- const fetchLeaderboard = async () => {
-  try {
-    const res = await fetch(
-      "http://localhost:5000/api/users/leaderboard/top"
-    );
-    const data = await res.json();
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const res = await fetch(
+          "http://localhost:5000/api/users/leaderboard/top",
+        );
+        const data = await res.json();
 
-    if (data.success) {
-      setLeaderboard(data.leaderboard);
-    }
-  } catch (err) {
-    console.error("Failed to load leaderboard");
-  }
-};
+        if (data.success) {
+          setLeaderboard(data.leaderboard);
+        }
+      } catch (err) {
+        console.error("Failed to load leaderboard");
+      }
+    };
 
-fetchLeaderboard();
-})
- 
+    fetchLeaderboard();
+  });
 
   const popularBattles = [...battles]
     .sort((a, b) => b.totalVotes - a.totalVotes)
     .slice(0, 5);
 
-    const spotlightBattle =
-  battles.find((b) => b.isFeatured) || popularBattles[0];
+  const spotlightBattle =
+    battles.find((b) => b.isFeatured) || popularBattles[0];
 
   const recentBattles = [...battles]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -134,35 +132,33 @@ fetchLeaderboard();
       </section>
 
       {spotlightBattle && (
-  <section className="spotlight-battle">
-    <div
-        className={`spotlight-card ${
-    spotlightBattle.isFeatured ? "daily" : ""
-  }`}
-      onClick={() => navigate(`/battle?battleId=${spotlightBattle._id}`)}
-    >
-      <div className="spotlight-badge">
-  {spotlightBattle.isFeatured
-    ? "🥇 Battle of the Day"
-    : "🔥 Trending Battle"}
-</div>
+        <section className="spotlight-battle">
+          <div
+            className={`spotlight-card ${
+              spotlightBattle.isFeatured ? "daily" : ""
+            }`}
+            onClick={() => navigate(`/battle?battleId=${spotlightBattle._id}`)}
+          >
+            <div className="spotlight-badge">
+              {spotlightBattle.isFeatured
+                ? "🥇 Battle of the Day"
+                : "🔥 Trending Battle"}
+            </div>
 
-      <h2 className="spotlight-title">
-        {spotlightBattle.title}
-      </h2>
+            <h2 className="spotlight-title">{spotlightBattle.title}</h2>
 
-      <div className="spotlight-options">
-        <span>{spotlightBattle.optionA}</span>
-        <strong>VS</strong>
-        <span>{spotlightBattle.optionB}</span>
-      </div>
+            <div className="spotlight-options">
+              <span>{spotlightBattle.optionA}</span>
+              <strong>VS</strong>
+              <span>{spotlightBattle.optionB}</span>
+            </div>
 
-      <div className="spotlight-meta">
-        🗳 {spotlightBattle.totalVotes} votes
-      </div>
-    </div>
-  </section>
-)}
+            <div className="spotlight-meta">
+              🗳 {spotlightBattle.totalVotes} votes
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="search-section">
         <form onSubmit={handleSearch} className="search-bar">
@@ -299,18 +295,24 @@ fetchLeaderboard();
             {popularBattles.map((b) => (
               <div
                 key={b._id}
-                className="battle-feed-card"
+                className="battle-feed-card poster-card"
                 onClick={() => navigate(`/battle?battleId=${b._id}`)}
               >
-                <div className="feed-title">{b.title}</div>
+                <div className="poster-container">
+                  {b.posterA && <img src={b.posterA} alt={b.optionA} />}
 
-                <div className="feed-options">
-                  <span>{b.optionA}</span>
-                  <strong>VS</strong>
-                  <span>{b.optionB}</span>
+                  <div className="vs-overlay">VS</div>
+
+                  {b.posterB && <img src={b.posterB} alt={b.optionB} />}
                 </div>
 
-                <div className="feed-meta">{b.totalVotes} votes</div>
+                <div className="battle-info">
+                  <div className="feed-title">{b.title}</div>
+
+                  <div className="battle-meta">
+                    🗳 {b.totalVotes} votes • 💬 {b.opinionCount}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -324,40 +326,49 @@ fetchLeaderboard();
           {mostDebatedBattles.map((b) => (
             <div
               key={b._id}
-              className="battle-feed-card"
+              className="battle-feed-card poster-card"
               onClick={() => navigate(`/battle?battleId=${b._id}`)}
             >
-              <div className="feed-title">{b.title}</div>
+              <div className="poster-container">
+                {b.posterA && <img src={b.posterA} alt={b.optionA} />}
 
-              <div className="feed-options">
-                <span>{b.optionA}</span>
-                <strong>VS</strong>
-                <span>{b.optionB}</span>
+                <div className="vs-overlay">VS</div>
+
+                {b.posterB && <img src={b.posterB} alt={b.optionB} />}
               </div>
 
-              <div className="feed-meta">💬 {b.opinionCount} opinions</div>
+              <div className="battle-info">
+                <div className="feed-title">{b.title}</div>
+
+                <div className="battle-meta">
+                  🗳 {b.totalVotes} votes • 💬 {b.opinionCount}
+                </div>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
       <section className="leaderboard-section">
-  <h2 className="section-title">🏆 Top Creators</h2>
+        <h2 className="section-title">🏆 Top Creators</h2>
 
-  <div className="leaderboard-list">
-    {leaderboard.map((user, index) => (
-      <div key={user.userId} className="leaderboard-card clickable" onClick={() => navigate(`/creator/${user.userId}`)}>
-        <div className="rank">#{index + 1}</div>
-        <div className="creator-name " >
-          {user.username}  
+        <div className="leaderboard-list">
+          {leaderboard.map((user, index) => (
+            <div
+              key={user.userId}
+              className="leaderboard-card clickable"
+              onClick={() => navigate(`/creator/${user.userId}`)}
+            >
+              <div className="rank">#{index + 1}</div>
+              <div className="creator-name ">{user.username}</div>
+              <div className="creator-stats">
+                🔥 {user.score} pts • 🗳 {user.totalVotes} votes • 💬{" "}
+                {user.totalOpinions}
+              </div>
+            </div>
+          ))}
         </div>
-        <div className="creator-stats">
-          🔥 {user.score} pts • 🗳 {user.totalVotes} votes • 💬 {user.totalOpinions}
-        </div>
-      </div>
-    ))}
-  </div>
-</section>
+      </section>
 
       {/* ✨ RECENT */}
       <section className="recent-battles">
@@ -374,20 +385,24 @@ fetchLeaderboard();
             {recentBattles.map((b) => (
               <div
                 key={b._id}
-                className="battle-feed-card"
+                className="battle-feed-card poster-card"
                 onClick={() => navigate(`/battle?battleId=${b._id}`)}
               >
-                <span className="new-badge">NEW</span>
+                <div className="poster-container">
+                  {b.posterA && <img src={b.posterA} alt={b.optionA} />}
 
-                <div className="feed-title">{b.title}</div>
+                  <div className="vs-overlay">VS</div>
 
-                <div className="feed-options">
-                  <span>{b.optionA}</span>
-                  <strong>VS</strong>
-                  <span>{b.optionB}</span>
+                  {b.posterB && <img src={b.posterB} alt={b.optionB} />}
                 </div>
 
-                <div className="feed-meta">{b.totalVotes} votes</div>
+                <div className="battle-info">
+                  <div className="feed-title">{b.title}</div>
+
+                  <div className="battle-meta">
+                    🗳 {b.totalVotes} votes • 💬 {b.opinionCount}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
