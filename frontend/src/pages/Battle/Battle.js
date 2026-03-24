@@ -309,35 +309,22 @@ function Battle() {
         .sort((a, b) => b.likes.length - a.likes.length)
     : [];
 
-  if (loading) {
+ if (loading) {
+  return (
+    <div className="battle-page">
+      <Skeleton height={32} width="70%" />
+      <Skeleton height={200} />
+      </div>
+  )
+ }
+
+  if(error || !battle) {
     return (
       <div className="battle-page">
-        <Skeleton height={32} width="70%" style={{ marginBottom: 20 }} />
-
-        <Skeleton height={48} style={{ marginBottom: 12 }} />
-        <Skeleton height={48} style={{ marginBottom: 24 }} />
-
-        <Skeleton height={20} width="40%" style={{ marginBottom: 8 }} />
-        <Skeleton height={12} />
-        <Skeleton height={12} />
+        <h2>Something Went wrong</h2>
+        <button onClick={() => navigate("/")}>Go Home</button>
       </div>
-    );
-  }
-
-  if (!battleId) {
-    return (
-      <div className="battle-page not-found">
-        <h1>😕 Battle not found</h1>
-        <p>This battle link is invalid or expired.</p>
-        <button
-          type="button"
-          onClick={() => navigate("/")}
-          className="primary-btn"
-        >
-          Go Home
-        </button>
-      </div>
-    );
+    )
   }
 
   const totalVotes = battle.votesA + battle.votesB;
@@ -369,7 +356,8 @@ function Battle() {
   }
 
   return (
-    <div className="battle-page">
+    <div className="battle-bg" style={{backgroundImage : `url($(battle?.posterA || battle?.posterB))`,}}>
+ <div className="battle-page">
       {feedback && (
         <div className={`feedback ${feedback.type}`}>{feedback.message}</div>
       )}
@@ -493,7 +481,7 @@ function Battle() {
         setReplyText={setReplyText}
         submitReply={submitReply}
         setOpinionText={setOpinionText}
-        onSubmit={submitOpinion}
+        onSubmit={() => {}}
         topOpinion={topOpinion}
         opinions={battle.opinions}
         showOpinions={showOpinions}
@@ -502,6 +490,8 @@ function Battle() {
         userId={currentUser?.id}
       />
     </div>
+    </div>
+   
   );
 }
 
