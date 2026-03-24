@@ -101,7 +101,7 @@ function Battle() {
           body: JSON.stringify({
             option,
             userId: currentUser.id,
-            username: currentUser.username
+            username: currentUser.username,
           }),
         },
       );
@@ -141,7 +141,7 @@ function Battle() {
             userId: currentUser.id,
             option: userVote,
             text: opinionText,
-             username: currentUser.username 
+            username: currentUser.username,
           }),
         },
       );
@@ -183,7 +183,10 @@ function Battle() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: currentUser.id,  username: currentUser.username  }),
+          body: JSON.stringify({
+            userId: currentUser.id,
+            username: currentUser.username,
+          }),
         },
       );
 
@@ -212,6 +215,8 @@ function Battle() {
       showFeedback("Failed to copy link", "warning");
     }
   };
+
+ 
 
   const toggleSaveBattle = async () => {
     if (!currentUser) {
@@ -266,7 +271,7 @@ function Battle() {
           body: JSON.stringify({
             userId: currentUser.id,
             text: text,
-             username: currentUser.username 
+            username: currentUser.username,
           }),
         },
       );
@@ -339,19 +344,16 @@ function Battle() {
 
   const totalOpinions = battle.opinions?.length || 0;
 
-const totalReplies =
-  battle.opinions?.reduce(
-    (sum, op) => sum + (op.replies?.length || 0),
-    0
-  ) || 0;
+  const totalReplies =
+    battle.opinions?.reduce((sum, op) => sum + (op.replies?.length || 0), 0) ||
+    0;
 
-const leadingOption =
-  battle.votesA > battle.votesB
-    ? battle.optionA
-    : battle.votesB > battle.votesA
-    ? battle.optionB
-    : "Tie";
-
+  const leadingOption =
+    battle.votesA > battle.votesB
+      ? battle.optionA
+      : battle.votesB > battle.votesA
+        ? battle.optionB
+        : "Tie";
 
   const voteDifference = Math.abs(battle.votesA - battle.votesB);
   const engagementScore = totalVotes + (battle.opinions?.length || 0) * 2;
@@ -418,7 +420,7 @@ const leadingOption =
         optionA={battle.optionA}
         optionB={battle.optionB}
         posterA={battle.posterA}
-  posterB={battle.posterB}
+        posterB={battle.posterB}
         hasVoted={hasVoted}
         userVote={userVote}
         selectedOption={selectedOption}
@@ -440,38 +442,31 @@ const leadingOption =
         }
       />
 
-    
-<div className="battle-stats">
+      <div className="battle-stats">
+        <h3>📊 Battle Stats</h3>
 
-  <h3>📊 Battle Stats</h3>
+        <div className="stats-grid">
+          <div className="stat-box">
+            <span className="stat-number">{totalVotes}</span>
+            <span className="stat-label">Votes</span>
+          </div>
 
-  <div className="stats-grid">
+          <div className="stat-box">
+            <span className="stat-number">{totalOpinions}</span>
+            <span className="stat-label">Opinions</span>
+          </div>
 
-    <div className="stat-box">
-      <span className="stat-number">{totalVotes}</span>
-      <span className="stat-label">Votes</span>
-    </div> 
+          <div className="stat-box">
+            <span className="stat-number">{totalReplies}</span>
+            <span className="stat-label">Replies</span>
+          </div>
 
-    <div className="stat-box">
-      <span className="stat-number">{totalOpinions}</span>
-      <span className="stat-label">Opinions</span>
-    </div>
-
-    <div className="stat-box">
-      <span className="stat-number">{totalReplies}</span>
-      <span className="stat-label">Replies</span>
-    </div>
-
-    <div className="stat-box">
-      <span className="stat-number">{leadingOption}</span>
-      <span className="stat-label">Leading</span>
-    </div>
-
-  </div>
-
-</div>
-
-
+          <div className="stat-box">
+            <span className="stat-number">{leadingOption}</span>
+            <span className="stat-label">Leading</span>
+          </div>
+        </div>
+      </div>
 
       <div className="momentum-meter">
         <span>{momentumLabel}</span>

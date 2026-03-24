@@ -87,6 +87,7 @@ router.get("/", async (req, res) => {
           // 🎬 ADD POSTERS TO RESPONSE
           posterA,
           posterB,
+          createdBy: battle.createdBy,
 
           totalVotes,
           createdAt: battle.createdAt,
@@ -97,7 +98,6 @@ router.get("/", async (req, res) => {
       }),
     );
 
-    // 🔥 SORT BY TRENDING
     enhancedBattles.sort((a, b) => b.trendingScore - a.trendingScore);
 
     res.json({
@@ -109,7 +109,7 @@ router.get("/", async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: "Failed to fetch battles",
+      message: "Failed to fetch battles",  
     });
   }
 });

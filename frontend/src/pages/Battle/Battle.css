@@ -680,6 +680,21 @@ button:disabled {
 
 }
 
+.delete-btn {
+  background: #ff4757;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.delete-btn:hover {
+  background: #ff6b81;
+}
+
 
 
 @keyframes fadeInUp {

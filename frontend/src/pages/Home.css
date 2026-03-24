@@ -507,6 +507,7 @@
 
 /* 🎬 POSTER CARD */
 .poster-card {
+  position: relative;
   cursor: pointer;
   border-radius: 16px;
   overflow: hidden;

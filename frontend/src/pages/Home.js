@@ -293,11 +293,13 @@ function Home() {
         ) : (
           <div className="battle-feed">
             {popularBattles.map((b) => (
+              
               <div
                 key={b._id}
                 className="battle-feed-card poster-card"
                 onClick={() => navigate(`/battle?battleId=${b._id}`)}
               >
+  
                 <div className="poster-container">
                   {b.posterA && <img src={b.posterA} alt={b.optionA} />}
 
@@ -388,6 +390,7 @@ function Home() {
                 className="battle-feed-card poster-card"
                 onClick={() => navigate(`/battle?battleId=${b._id}`)}
               >
+                
                 <div className="poster-container">
                   {b.posterA && <img src={b.posterA} alt={b.optionA} />}
 
