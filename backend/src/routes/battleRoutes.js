@@ -114,6 +114,76 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/preview/:id", async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.send("Invalid battle ID");
+  }
+
+  try {
+    const battle = await Battle.findById(id);
+
+    if (!battle) {
+      return res.send("Battle not found");
+    }
+
+    // Ensure posters exist
+    let posterA = battle.posterA;
+    let posterB = battle.posterB;
+
+    if (!posterA || !posterB) {
+      try {
+        posterA = await fetchPoster(battle.optionA, battle.type);
+        posterB = await fetchPoster(battle.optionB, battle.type);
+
+        battle.posterA = posterA;
+        battle.posterB = posterB;
+
+        await battle.save();
+      } catch (err) {
+        console.log("Poster fetch failed (preview)");
+      }
+    }
+
+    const title = `${battle.optionA} vs ${battle.optionB}`;
+    const description = `🔥 ${battle.title} — What's your pick?`;
+    const image = posterA || posterB;
+
+    // 🔥 IMPORTANT: frontend route
+    const url = `http://localhost:3000/battle?battleId=${battle._id}`;
+
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta property="og:title" content="${title}" />
+          <meta property="og:description" content="${description}" />
+          <meta property="og:image" content="${image}" />
+          <meta property="og:url" content="${url}" />
+          <meta property="og:type" content="website" />
+
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="${title}" />
+          <meta name="twitter:description" content="${description}" />
+          <meta name="twitter:image" content="${image}" />
+
+          <title>${title}</title>
+        </head>
+
+        <body>
+          <script>
+            window.location.href = "${url}";
+          </script>
+        </body>
+      </html>
+    `);
+  } catch (err) {
+    console.log(err);
+    res.send("Error generating preview");
+  }
+});
+
 /**
  * GET /api/battles/:id
  * Fetch single battle + derived votes + userVote

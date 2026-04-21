@@ -9,6 +9,7 @@ function OpinionSection({
   onSubmit,
   opinions = [],
   showOpinions,
+  
   toggleOpinions,
   likeOpinion,
   userId,
@@ -35,7 +36,7 @@ function OpinionSection({
 
   const sortedOpinions = [...otherOpinions].sort((a, b) => {
     if (sortType === "top") {
-      return (b.likes?.length || 0) - (a.likes?.length || 0);
+      return (b.likes?.length || 0) - (a.likes?.length || 0); 
     }
 
     if (sortType === "new") {

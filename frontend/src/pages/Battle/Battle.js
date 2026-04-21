@@ -216,8 +216,6 @@ function Battle() {
     }
   };
 
- 
-
   const toggleSaveBattle = async () => {
     if (!currentUser) {
       navigate("/login", {
@@ -309,22 +307,22 @@ function Battle() {
         .sort((a, b) => b.likes.length - a.likes.length)
     : [];
 
- if (loading) {
-  return (
-    <div className="battle-page">
-      <Skeleton height={32} width="70%" />
-      <Skeleton height={200} />
+  if (loading) {
+    return (
+      <div className="battle-page">
+        <Skeleton height={32} width="70%" />
+        <Skeleton height={200} />
       </div>
-  )
- }
+    );
+  }
 
-  if(error || !battle) {
+  if (error || !battle) {
     return (
       <div className="battle-page">
         <h2>Something Went wrong</h2>
         <button onClick={() => navigate("/")}>Go Home</button>
       </div>
-    )
+    );
   }
 
   const totalVotes = battle.votesA + battle.votesB;
@@ -356,142 +354,170 @@ function Battle() {
   }
 
   return (
-    <div className="battle-bg" style={{backgroundImage : `url($(battle?.posterA || battle?.posterB))`,}}>
- <div className="battle-page">
-      {feedback && (
-        <div className={`feedback ${feedback.type}`}>{feedback.message}</div>
-      )}
-      <BattleHeader title={battle.title} />
+    <div
+      className="battle-bg"
+      style={{ backgroundImage: `url($(battle?.posterA || battle?.posterB))` }}
+    >
+      <div className="battle-page">
+        {feedback && (
+          <div className={`feedback ${feedback.type}`}>{feedback.message}</div>
+        )}
+        <BattleHeader title={battle.title} />
 
-      <div className="battle-actions">
-        <button className="secondary-btn" onClick={shareBattle}>
-          🔗 Share Battle
-        </button>
-        <button
-          className={`save-btn ${isSaved ? "saved" : ""}`}
-          onClick={toggleSaveBattle}
-        >
-          {isSaved ? "⭐ Saved" : "☆ Save Battle"}
-        </button>
-      </div>
+        <div className="battle-actions">
+          <button className="secondary-btn" onClick={shareBattle}>
+            🔗 Share Battle
+          </button>
+          <button
+            className={`save-btn ${isSaved ? "saved" : ""}`}
+            onClick={toggleSaveBattle}
+          >
+            {isSaved ? "⭐ Saved" : "☆ Save Battle"}
+          </button>
+        </div>
 
-      <div className="share-actions">
-        <button
-          className="share-btn whatsapp"
-          onClick={() =>
-            window.open(
-              `https://wa.me/?text=${encodeURIComponent(window.location.href)}`,
-              "_blank",
-            )
+        <div className="share-actions">
+          <button
+            className="share-btn whatsapp"
+            onClick={() => {
+              const previewLink = `http://localhost:5000/api/battles/preview/${battle._id}`;
+
+              const shareText = `🔥 ${battle.title}
+
+🤔 What's your pick?
+
+👉 Vote now:
+
+Only true fans can answer this 😤
+${previewLink}`;
+
+              window.open(
+                `https://wa.me/?text=${encodeURIComponent(shareText)}`,
+                "_blank",
+              );
+            }}
+          >
+            WhatsApp
+          </button>
+
+          <button
+            className="share-btn twitter"
+            onClick={() => {
+              const previewLink = `http://localhost:5000/api/battles/preview/${battle._id}`;
+
+              const shareText = `🔥 ${battle.title}
+
+🤔 What's your pick?
+
+👉 Vote now:
+
+Only true fans can answer this 😤
+${previewLink}`;
+
+              window.open(
+                `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                  shareText,
+                )}`,
+                "_blank",
+              );
+            }}
+          >
+            X
+          </button>
+        </div>
+
+        {/* 🗳️ VOTE */}
+        <VoteSection
+          optionA={battle.optionA}
+          optionB={battle.optionB}
+          posterA={battle.posterA}
+          posterB={battle.posterB}
+          hasVoted={hasVoted}
+          userVote={userVote}
+          selectedOption={selectedOption}
+          onVoteA={() => vote("A")}
+          onVoteB={() => vote("B")}
+        />
+
+        {/* 📊 RESULTS */}
+        <ResultsSection
+          optionA={battle.optionA}
+          optionB={battle.optionB}
+          votesA={battle.votesA}
+          votesB={battle.votesB}
+          percentA={
+            totalVotes === 0
+              ? 0
+              : Math.round((battle.votesA / totalVotes) * 100)
           }
-        >
-          WhatsApp
-        </button>
-
-        <button
-          className="share-btn twitter"
-          onClick={() =>
-            window.open(
-              `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-                window.location.href,
-              )}`,
-              "_blank",
-            )
+          percentB={
+            totalVotes === 0
+              ? 0
+              : Math.round((battle.votesB / totalVotes) * 100)
           }
-        >
-          X
-        </button>
-      </div>
+        />
 
-      {/* 🗳️ VOTE */}
-      <VoteSection
-        optionA={battle.optionA}
-        optionB={battle.optionB}
-        posterA={battle.posterA}
-        posterB={battle.posterB}
-        hasVoted={hasVoted}
-        userVote={userVote}
-        selectedOption={selectedOption}
-        onVoteA={() => vote("A")}
-        onVoteB={() => vote("B")}
-      />
+        <div className="battle-stats">
+          <h3>📊 Battle Stats</h3>
 
-      {/* 📊 RESULTS */}
-      <ResultsSection
-        optionA={battle.optionA}
-        optionB={battle.optionB}
-        votesA={battle.votesA}
-        votesB={battle.votesB}
-        percentA={
-          totalVotes === 0 ? 0 : Math.round((battle.votesA / totalVotes) * 100)
-        }
-        percentB={
-          totalVotes === 0 ? 0 : Math.round((battle.votesB / totalVotes) * 100)
-        }
-      />
+          <div className="stats-grid">
+            <div className="stat-box">
+              <span className="stat-number">{totalVotes}</span>
+              <span className="stat-label">Votes</span>
+            </div>
 
-      <div className="battle-stats">
-        <h3>📊 Battle Stats</h3>
+            <div className="stat-box">
+              <span className="stat-number">{totalOpinions}</span>
+              <span className="stat-label">Opinions</span>
+            </div>
 
-        <div className="stats-grid">
-          <div className="stat-box">
-            <span className="stat-number">{totalVotes}</span>
-            <span className="stat-label">Votes</span>
-          </div>
+            <div className="stat-box">
+              <span className="stat-number">{totalReplies}</span>
+              <span className="stat-label">Replies</span>
+            </div>
 
-          <div className="stat-box">
-            <span className="stat-number">{totalOpinions}</span>
-            <span className="stat-label">Opinions</span>
-          </div>
-
-          <div className="stat-box">
-            <span className="stat-number">{totalReplies}</span>
-            <span className="stat-label">Replies</span>
-          </div>
-
-          <div className="stat-box">
-            <span className="stat-number">{leadingOption}</span>
-            <span className="stat-label">Leading</span>
+            <div className="stat-box">
+              <span className="stat-number">{leadingOption}</span>
+              <span className="stat-label">Leading</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="momentum-meter">
-        <span>{momentumLabel}</span>
-      </div>
+        <div className="momentum-meter">
+          <span>{momentumLabel}</span>
+        </div>
 
-      {hasVoted && battle.opinions.length === 0 && (
-        <p className="empty-state">
-          💬 No opinions yet. Be the first to share why you chose this.
-        </p>
-      )}
-
-      {hasVoted &&
-        battle.opinions.some((op) => op.userId === currentUser?.id) && (
+        {hasVoted && battle.opinions.length === 0 && (
           <p className="empty-state">
-            ✅ You’ve already shared your opinion on this battle.
+            💬 No opinions yet. Be the first to share why you chose this.
           </p>
         )}
 
-      {/* 💬 OPINIONS */}
-      <OpinionSection
-        hasVoted={hasVoted}
-        opinionText={opinionText}
-        replyText={replyText}
-        setReplyText={setReplyText}
-        submitReply={submitReply}
-        setOpinionText={setOpinionText}
-        onSubmit={() => {}}
-        topOpinion={topOpinion}
-        opinions={battle.opinions}
-        showOpinions={showOpinions}
-        toggleOpinions={() => setShowOpinions((s) => !s)}
-        likeOpinion={likeOpinion}
-        userId={currentUser?.id}
-      />
+        {hasVoted &&
+          battle.opinions.some((op) => op.userId === currentUser?.id) && (
+            <p className="empty-state">
+              ✅ You’ve already shared your opinion on this battle.
+            </p>
+          )}
+
+        {/* 💬 OPINIONS */}
+        <OpinionSection
+          hasVoted={hasVoted}
+          opinionText={opinionText}
+          replyText={replyText}
+          setReplyText={setReplyText}
+          submitReply={submitReply}
+          setOpinionText={setOpinionText}
+          onSubmit={() => {}}
+          topOpinion={topOpinion}
+          opinions={battle.opinions}
+          showOpinions={showOpinions}
+          toggleOpinions={() => setShowOpinions((s) => !s)}
+          likeOpinion={likeOpinion}
+          userId={currentUser?.id}
+        />
+      </div>
     </div>
-    </div>
-   
   );
 }
 
