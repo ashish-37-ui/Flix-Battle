@@ -542,7 +542,7 @@ router.post("/:id/opinion", async (req, res) => {
   if (!userId || !option || !text) {
     return res.status(400).json({
       success: false,
-      message: "Missing opinion data",
+      message: "Vote first before posting opinion",
     });
   }
 

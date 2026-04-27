@@ -128,45 +128,58 @@ function Battle() {
   };
 
   /* ---------------- SUBMIT OPINION ---------------- */
-  const submitOpinion = async () => {
-    if (!opinionText.trim()) return;
+const submitOpinion = async () => {
+  if (!opinionText.trim()) return;
 
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/battles/${battle._id}/opinion`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: currentUser.id,
-            option: userVote,
-            text: opinionText,
-            username: currentUser.username,
-          }),
-        },
-      );
+  const finalOption = selectedOption || userVote;
 
-      const data = await res.json();
+  if (!finalOption) {
+    showFeedback("⚠️ Please vote first", "warning");
+    return;
+  }
 
-      // ❌ Backend rejected opinion (already posted, etc.)
-      if (!data.success) {
-        showFeedback(data.message || "Opinion already submitted", "warning");
-        return;
+  console.log("SENDING:", {
+    userId: currentUser.id,
+    option: finalOption,
+    text: opinionText,
+  });
+
+  try {
+    const res = await fetch(
+      `http://localhost:5000/api/battles/${battle._id}/opinion`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          option: finalOption,
+          text: opinionText,
+          username: currentUser.username,
+        }),
       }
+    );
 
-      // ✅ Opinion accepted
-      setBattle((prev) => ({
-        ...prev,
-        opinions: data.opinions || prev.opinions,
-      }));
+    const data = await res.json();
 
-      setOpinionText("");
+    console.log("RESPONSE:", data);
 
-      showFeedback("💬 Opinion posted", "success");
-    } catch (err) {
-      showFeedback("Failed to submit opinion", "warning");
+    if (!data.success) {
+      showFeedback(data.message, "warning");
+      return;
     }
-  };
+
+    setBattle((prev) => ({
+      ...prev,
+      opinions: data.opinions,
+    }));
+
+    setOpinionText("");
+
+    showFeedback("💬 Opinion posted");
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   /* ---------------- LIKE OPINION ---------------- */
   const likeOpinion = async (opinionId) => {
@@ -380,7 +393,7 @@ function Battle() {
           <button
             className="share-btn whatsapp"
             onClick={() => {
-              const previewLink = `http://localhost:5000/api/battles/preview/${battle._id}`;
+              const previewLink = `https://president-quickstep-audibly.ngrok-free.dev/api/battles/preview/${battle._id}`;
 
               const shareText = `🔥 ${battle.title}
 
@@ -403,15 +416,15 @@ ${previewLink}`;
           <button
             className="share-btn twitter"
             onClick={() => {
-              const previewLink = `http://localhost:5000/api/battles/preview/${battle._id}`;
+              const previewLink = `https://president-quickstep-audibly.ngrok-free.dev/api/battles/preview/${battle._id}`;
 
               const shareText = `🔥 ${battle.title}
 
-🤔 What's your pick?
+ What's your pick?
 
 👉 Vote now:
 
-Only true fans can answer this 😤
+Only true fans can answer this 
 ${previewLink}`;
 
               window.open(
@@ -508,7 +521,7 @@ ${previewLink}`;
           setReplyText={setReplyText}
           submitReply={submitReply}
           setOpinionText={setOpinionText}
-          onSubmit={() => {}}
+          onSubmit={submitOpinion}
           topOpinion={topOpinion}
           opinions={battle.opinions}
           showOpinions={showOpinions}
